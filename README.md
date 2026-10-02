@@ -10,7 +10,7 @@
 
 ---
 
-## 60-Second Executive Summary
+## Summary
 
 - **Problem**: Most e-commerce portfolio projects are glorified CRUD catalogs that rely on client-side calculations, introduce floating-point rounding errors on currencies, suffer from inventory overselling race conditions under concurrent checkouts, and expose administrative actions through weak role checks.
 - **Solution**: ShopCore is an engineered commerce engine that treats pricing, inventory, and orders with strict transactional integrity:
