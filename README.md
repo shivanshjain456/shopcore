@@ -269,7 +269,7 @@ shopcore/
 │   ├── security.md             # Threat matrix and security model
 │   ├── operations.md           # Production runbooks and systemd guide
 │   ├── limitations.md          # Honest boundaries and architectural ceilings
-│   └── recruiter-review.md     # 3-minute technical review guide
+│   └── technical-review.md     # 3-minute technical review guide
 ├── prisma/
 │   ├── schema.prisma           # 52 Prisma models with full relational integrity
 │   ├── seed.ts                 # Core seed script
@@ -330,7 +330,7 @@ For deeper technical reviews, explore the dedicated documentation suite:
 - [Security Model and Threat Assessment](docs/security.md): Threat vectors, rate limiting, and cryptographic controls.
 - [Operations and Deployment Runbook](docs/operations.md): Single-VPS production guide, systemd setup, and backup strategy.
 - [Engineering Boundaries and Limitations](docs/limitations.md): Scale limits, single-writer ceilings, and roadmap.
-- [Recruiter and Interviewer Quick Review](docs/recruiter-review.md): 3-minute executive technical summary.
+- [Technical Interview Quick Review](docs/technical-review.md): 3-minute executive technical summary.
 
 ---
 

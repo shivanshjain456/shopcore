@@ -1,7 +1,7 @@
-# ShopCore — Technical Interview & Recruiter Executive Summary
+# ShopCore — Technical Interview Executive Summary
 
 > **Review Time**: Under 3 minutes.
-> **Audience**: Engineering Managers, Staff/Principal Engineers, and Technical Recruiters evaluating full-stack, backend, and infrastructure engineering competencies.
+> **Audience**: Engineering Managers, Staff/Principal Engineers, and Technical Evaluators evaluating full-stack, backend, and infrastructure engineering competencies.
 
 ---
 
