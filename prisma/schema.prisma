@@ -1,0 +1,1301 @@
+// ShopCore — full domain schema
+// SQLite chosen for: zero-admin, single-file, transactional, fits scale (<500 users/mo, 100 concurrent).
+// SQLite + Prisma does NOT support native enums; allowed values are enforced via
+// src/lib/enums.ts (compile-time types + runtime Zod validators).
+// Excel is the I/O layer on TOP of this schema (admin import/export), not a replacement.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY & ACCOUNTS
+// ─────────────────────────────────────────────────────────────────────────────
+// UserRole:   CUSTOMER | B2B | ADMIN
+// UserStatus: PENDING_OTP | ACTIVE | SUSPENDED | DELETED
+
+model User {
+  id            String     @id @default(cuid())
+  // Mandatory signup fields (every one of the 11 you listed)
+  firstName     String
+  lastName      String
+  email         String     @unique
+  phone         String     @unique // E.164 e.g. +91XXXXXXXXXX  (globally unique per Feature #11)
+  phoneVerified Boolean    @default(false)  // Firebase SMS-OTP verified (Phone Verification feature)
+  phoneVerifiedAt DateTime?
+  firebasePhoneUid String?  @unique  // distinct from `firebaseUid` (email-mirror UID); set on phone verify
+  passwordHash  String     // bcrypt cost 12
+  addressLine1  String
+  addressLine2  String
+  city          String
+  state         String     // Indian state
+  pinCode       String     // 6-digit
+  country       String     @default("India")
+
+  role          String     @default("CUSTOMER")    // see UserRole
+  status        String     @default("PENDING_OTP") // see UserStatus
+
+  // Firebase linkage (identity vault)
+  firebaseUid   String?    @unique
+
+  // B2B-specific (nullable for B2C)
+  companyName   String?
+  gstin         String?    @unique
+  pan           String?
+  b2bApprovedAt DateTime?
+  b2bTierId     String?
+  b2bTier       B2BTier?   @relation(fields: [b2bTierId], references: [id])
+
+  // Loyalty
+  loyaltyPoints Int        @default(0)
+  referralCode  String     @unique @default(cuid())
+  referredById  String?
+  referredBy    User?      @relation("Referrals", fields: [referredById], references: [id])
+  referrals     User[]     @relation("Referrals")
+
+  // Email subscription opt-in/out — drives whether background jobs
+  // (abandoned-cart reminders, low-stock restock pings, marketing
+  // campaigns) may send transactional-but-promotional mail to this user.
+  // Hard transactional mail (OTP, password-reset, order-status) ignores
+  // this flag — those are operational, not promotional.
+  // Added by Item 7 (Background Jobs System) — spec §3.8.
+  emailSubscribed Boolean  @default(true)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  addresses        Address[]
+  carts            Cart[]
+  orders           Order[]
+  wishlist         WishlistItem[]
+  reviews          Review[]
+  returns          ReturnRequest[]
+  tickets          SupportTicket[]
+  chatRoom         ChatRoom?
+  chatMessages     ChatMessage[]
+  otpCodes         OtpCode[]
+  passwordResetRequests PasswordResetRequest[]
+  sessions             Session[]
+  refreshTokenFamilies RefreshTokenFamily[]
+  expressCheckout      ExpressCheckout?
+  subscriptions    Subscription[]
+  loyaltyLedger    LoyaltyLedger[]
+  savedCarts       SavedCart[]
+  activityLog      UserActivity[]
+  adminAuditLogs   AuditLog[]      @relation("AdminActor")
+  quoteRequests    QuoteRequest[]
+  compareItems     CompareItem[]
+  storeAssets      StoreAsset[]   @relation("StoreAssetUploader")
+
+  @@index([role, status])
+  @@index([createdAt])
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String?  // "Home", "Office"
+  fullName     String
+  phone        String
+  addressLine1 String
+  addressLine2 String
+  city         String
+  state        String
+  pinCode      String
+  country      String   @default("India")
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  shippingOrders Order[] @relation("ShippingAddress")
+  billingOrders  Order[] @relation("BillingAddress")
+
+  @@index([userId])
+}
+
+model OtpCode {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email       String
+  codeHash    String   // bcrypt hashed OTP
+  purpose     String   // SIGNUP | LOGIN | RESET | EMAIL_CHANGE
+  // For RESET: links this OTP to a specific reset request so that on
+  // successful verify we can issue a reset token tied to the same request.
+  resetRequestId String?
+  attempts    Int      @default(0)
+  maxAttempts Int      @default(5)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([email, purpose])
+  @@index([expiresAt])
+  @@index([resetRequestId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD RESET — Feature #12 (OTP-based forgot/reset password flow)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// A two-stage flow:
+//
+//   1. PasswordResetRequest  — created the moment the user submits their
+//      email. Generic to the caller (no enumeration). Holds counters for
+//      OTP issuance + verify attempts. ONE active request per (email).
+//
+//   2. PasswordResetToken    — created ONLY after a valid OTP. Single-use,
+//      short-lived (10 min). The opaque secret is hashed (SHA-256) before
+//      storage; the plaintext is returned to the client exactly once and
+//      lives in the URL fragment / form state.
+//
+// Both rows are scoped to the originating IP + UA for forensic audit (NOT
+// for authorization — a user on a different network must be able to finish
+// the flow). Consumed/expired rows are tombstoned, never deleted, so
+// post-incident forensics work.
+//
+model PasswordResetRequest {
+  id            String   @id @default(cuid())
+  // Email is denormalised because users with PENDING_OTP status might not
+  // yet have a userId set up (in our schema they do, but defensive).
+  email         String
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status        String   @default("PENDING")   // PENDING | OTP_VERIFIED | CONSUMED | EXPIRED | CANCELED
+  // Server-generated correlation id surfaced to the client as `requestId`.
+  // The client echoes it on every subsequent call in this flow — it binds
+  // the OTP and the reset token to the originating /initiate call so a
+  // stolen OTP can't be paired with a different request.
+  ipAddress     String?
+  userAgent     String?
+  // Counters — used for forensics + rate-shaping (server has separate
+  // sliding-window limits in `lib/security/ratelimit`).
+  otpIssueCount Int      @default(1)
+  // Hard wall — after this many OTP issuances against the same request,
+  // the request is expired and the user is asked to start over. Stops
+  // a single request id from becoming a forever-OTP-pump.
+  maxOtpIssue   Int      @default(5)
+  // Absolute expiry — the request itself dies after 30 min even if
+  // OTPs keep rolling. Prevents stale tokens from lingering.
+  expiresAt     DateTime
+  consumedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tokens        PasswordResetToken[]
+
+  @@index([email])
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id            String   @id @default(cuid())
+  requestId     String
+  request       PasswordResetRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId        String
+  // sha256 hex of the opaque 32-byte secret. UNIQUE — the secret itself
+  // is never stored (same pattern as RefreshToken).
+  tokenHash     String   @unique
+  // Short-lived (10 min). Forces the "verify → reset" handoff to be quick.
+  expiresAt     DateTime
+  // Set the moment the password is changed. Single-use.
+  consumedAt    DateTime?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  @@index([requestId])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESSIONS & REFRESH TOKENS  (Bug #7 — rotation + reuse detection)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Token model:
+//   - Access token : short-lived (15 min) JWT carried in sc_session / sc_admin
+//                    cookies. Stateless verify on the hot path; DB row is
+//                    consulted lazily and only for revocation safety.
+//   - Refresh token: long-lived (30 d / 12 h) opaque 256-bit secret carried in
+//                    sc_refresh / sc_admin_refresh HttpOnly cookies. Hashed
+//                    SHA-256 before storage. SINGLE-USE — every refresh
+//                    rotates it.
+//
+// Family-based reuse detection (Auth0 / Firebase pattern):
+//   - Login → new RefreshTokenFamily row, plus a RefreshToken row pointing to
+//     it (parentId=null).
+//   - Refresh → mark old RefreshToken row rotatedAt=now, create a new row in
+//     the SAME family with parentId=<old row>.
+//   - If a refresh token whose `rotatedAt` is already set is presented, that's
+//     proof two parties hold the same secret → THEFT. We invalidate the
+//     entire family (cascade), revoke any sessions in it, and force re-login.
+//
+// `absoluteExpiresAt` is the family's hard ceiling — refresh rotations
+// cannot extend a family past this. After login + 30 days, the user must
+// re-authenticate even if they've been actively refreshing.
+
+model Session {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash         String    @unique
+  ipAddress         String?
+  userAgent         String?
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  // Refresh-family back-reference. Null on legacy rows; new sessions always
+  // belong to a family so logout-all / theft-detect can cascade cleanly.
+  refreshFamilyId   String?
+  refreshFamily     RefreshTokenFamily? @relation(fields: [refreshFamilyId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([refreshFamilyId])
+}
+
+model RefreshTokenFamily {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Hard ceiling — rotations cannot extend a family past this point.
+  absoluteExpiresAt DateTime
+  // Set when a reuse-attack is detected, or by an explicit logout-all.
+  // Once set, NO token in this family is accepted; sessions auto-revoke.
+  revokedAt         DateTime?
+  revokedReason     String?   // 'REUSE_DETECTED' | 'LOGOUT_ALL' | 'ADMIN_REVOKE' | 'PASSWORD_CHANGE' | 'USER_LOGOUT'
+  ipAddress         String?   // device that started the family
+  userAgent         String?
+  createdAt         DateTime  @default(now())
+
+  tokens            RefreshToken[]
+  sessions          Session[]
+
+  @@index([userId])
+  @@index([absoluteExpiresAt])
+  @@index([revokedAt])
+}
+
+model RefreshToken {
+  id                String    @id @default(cuid())
+  familyId          String
+  family            RefreshTokenFamily @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  // sha256 hex of the opaque 32-byte secret. UNIQUE — the secret itself is
+  // never stored.
+  tokenHash         String    @unique
+  // Per-token expiry (≤ family.absoluteExpiresAt). Aligned with the access
+  // token's lifetime so a passive observer can't replay either independently.
+  expiresAt         DateTime
+  // Set the moment this token is exchanged for a new one. A second
+  // presentation of a rotated token is a theft signal — see route handler.
+  rotatedAt         DateTime?
+  // For the audit chain — who succeeded this row.
+  successorId       String?
+  parentId          String?
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime  @default(now())
+
+  @@index([familyId])
+  @@index([expiresAt])
+  @@index([rotatedAt])
+}
+
+model UserActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  metadata  String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATALOG
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  imageUrl    String?
+  // Item 17 — wide banner at the top of /c/[slug]; small icon for nav.
+  bannerUrl   String?
+  iconUrl     String?
+  parentId    String?
+  parent      Category?  @relation("Subcategories", fields: [parentId], references: [id])
+  children    Category[] @relation("Subcategories")
+  products    Product[]
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  @@index([parentId])
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  logoUrl     String?
+  // Item 17 — optional wider banner shown on brand-detail pages.
+  bannerUrl   String?
+  description String?
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  sku           String   @unique
+  name          String
+  slug          String   @unique
+  description   String
+  shortDesc     String?
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  brandId       String?
+  brand         Brand?   @relation(fields: [brandId], references: [id])
+
+  // Pricing in PAISE (integer; avoids float errors). Display = /100.
+  mrpPaise      Int
+  pricePaise    Int      // B2C selling price
+  b2bPricePaise Int?     // optional B2B base price; tiers can further discount
+
+  gstRate       Float    @default(18.0)
+  hsnCode       String?
+
+  // Default/no-variant stock (used if no variants)
+  stock         Int      @default(0)
+  lowStockAt    Int      @default(5)
+
+  isActive      Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
+
+  metaTitle     String?
+  metaDesc      String?
+
+  aiTags        String?  // CSV of auto-extracted tags
+
+  // Item 14 — free-form spec map used by the compare feature. JSON
+  // string: { "processor": "Ryzen 5 2600", "ram": "16GB", ... }. The
+  // compare view builds its rows from the union of every product's
+  // keys (missing → "—"). Keep keys snake_case; the UI maps them to
+  // human labels via src/lib/compare/attributeGroups.ts.
+  attributes    String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  images        ProductImage[]
+  variants      Variant[]
+  reviews       Review[]
+  wishlistedBy  WishlistItem[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  bundleItems   BundleItem[]
+  inventoryLog  InventoryLog[]
+  compareItems  CompareItem[]
+
+  @@index([categoryId, isActive])
+  @@index([brandId])
+  @@index([isFeatured])
+
+  slugAliases ProductSlugAlias[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRODUCT SLUG ALIAS — Feature #35 (shareable URL system)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// When a product's slug changes (e.g. admin renames "blue-denim" →
+// "blue-denim-jacket"), the old URL must continue to resolve so that any
+// link a customer already shared (WhatsApp, Twitter, email) still lands
+// on the right product. We record the OLD slug here when a rename
+// happens; the PDP looks up by current slug first, then by alias, and
+// 301-redirects aliased hits to the current canonical URL.
+//
+// `slug` is globally unique across BOTH Product.slug AND
+// ProductSlugAlias.slug — enforced by the application layer (the alias
+// writer refuses if any active product already owns the slug). SQLite
+// doesn't support cross-table unique constraints natively.
+model ProductSlugAlias {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Old slug being remembered. UNIQUE within the alias table so a single
+  // slug never points to two different products.
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  // Item 19 — gallery foundation. Admin can soft-disable a row to hide
+  // it from the storefront without losing the upload (good for seasonal
+  // product photography rotations). Cards / wishlist / search read the
+  // first `isActive` row; the PDP gallery lists every `isActive` row.
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  // Hot path for the PDP gallery + every card surface — covers
+  //   `where productId AND isActive` + `orderBy sortOrder`.
+  @@index([productId, isActive, sortOrder])
+}
+
+model Variant {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku           String   @unique
+  name          String   // "16GB RAM / 512GB SSD / Silver"
+  attributes    String   // JSON
+  mrpPaise      Int
+  pricePaise    Int
+  b2bPricePaise Int?
+  stock         Int      @default(0)
+  imageUrl      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  inventoryLog  InventoryLog[]
+
+  @@index([productId])
+}
+
+model Bundle {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String?
+  pricePaise  Int
+  isActive    Boolean      @default(true)
+  items       BundleItem[]
+  createdAt   DateTime     @default(now())
+}
+
+model BundleItem {
+  id        String  @id @default(cuid())
+  bundleId  String
+  bundle    Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+
+  @@index([bundleId])
+}
+
+model InventoryLog {
+  id          String   @id @default(cuid())
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  variantId   String?
+  variant     Variant? @relation(fields: [variantId], references: [id])
+  delta       Int
+  reason      String   // PURCHASE, RETURN, MANUAL_ADJUST, BULK_UPLOAD, ORDER
+  refId       String?
+  performedBy String?
+  createdAt   DateTime @default(now())
+
+  @@index([productId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CART & WISHLIST
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now())
+
+  @@index([userId])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  variantId String?
+  variant   Variant? @relation(fields: [variantId], references: [id])
+  quantity  Int      @default(1)
+  addedAt   DateTime @default(now())
+
+  @@unique([cartId, productId, variantId])
+}
+
+model SavedCart {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  payload   String   // JSON snapshot
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ORDERS, PAYMENT (QR + UTR), SHIPPING
+// ─────────────────────────────────────────────────────────────────────────────
+// OrderStatus:   PENDING_PAYMENT_REVIEW | PAYMENT_VERIFIED | PAYMENT_REJECTED |
+//                PROCESSING | PACKED | SHIPPED | OUT_FOR_DELIVERY | DELIVERED |
+//                CANCELLED | RETURNED | REFUNDED
+// PaymentStatus: AWAITING_VERIFICATION | VERIFIED | REJECTED | REFUNDED
+
+model Order {
+  id                String   @id @default(cuid())
+  orderNumber       String   @unique  // human-friendly: SC-2026-000123
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+
+  status            String   @default("PENDING_PAYMENT_REVIEW")
+
+  // Money in paise
+  subtotalPaise     Int
+  discountPaise     Int      @default(0)
+  shippingPaise     Int      @default(0)
+  taxPaise          Int      @default(0)
+  totalPaise        Int
+
+  couponId          String?
+  coupon            Coupon?  @relation(fields: [couponId], references: [id])
+
+  shippingAddressId String?
+  shippingAddress   Address? @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId  String?
+  billingAddress    Address? @relation("BillingAddress", fields: [billingAddressId], references: [id])
+  addressSnapshot   String   // JSON freeze at order time
+
+  // Payment (QR/UTR flow)
+  paymentStatus       String    @default("AWAITING_VERIFICATION")
+  paymentMethod       String    @default("UPI")    // UPI | IMPS | NEFT | RTGS — see lib/checkout/utr.ts
+  utrNumber           String?
+  receiptUrl          String?
+  paymentVerifiedAt   DateTime?
+  paymentVerifiedBy   String?
+  paymentRejectReason String?
+  // Admin's attestation at verify time that the bank-statement amount matched.
+  // Set in lock-step with paymentStatus='VERIFIED' (see verifyPayment()).
+  amountVerifiedAt    DateTime?
+
+  // Shipping (admin-entered AFTER order)
+  courierName    String?
+  trackingNumber String?
+  trackingUrl    String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+
+  customerNote String?
+  internalNote String?
+
+  isB2B        Boolean @default(false)
+  gstinAtOrder String?
+
+  // Loyalty: snapshot of the earn formula + computed-points-at-placement.
+  // Verified payment credits EXACTLY `loyaltyPointsEarned` — admin can't
+  // change the rate retroactively for in-flight orders. JSON for forensics.
+  loyaltyFormulaSnapshot String?
+  loyaltyPointsEarned    Int     @default(0)
+
+  items         OrderItem[]
+  returns       ReturnRequest[]
+  statusHistory OrderStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product @relation(fields: [productId], references: [id])
+  variantId      String?
+  variant        Variant? @relation(fields: [variantId], references: [id])
+
+  // Snapshot at order time
+  productName    String
+  variantName    String?
+  sku            String
+  unitPricePaise Int
+  quantity       Int
+  lineTotalPaise Int
+  gstRate        Float
+  taxPaise       Int
+
+  @@index([orderId])
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    String
+  note      String?
+  changedBy String?
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RETURNS / EXCHANGES / REFUNDS (rules configurable in StoreConfig)
+// ─────────────────────────────────────────────────────────────────────────────
+// ReturnStatus: REQUESTED | APPROVED | REJECTED | ITEM_RECEIVED | REFUND_ISSUED | EXCHANGE_SHIPPED | CLOSED
+// ReturnType:   RETURN | EXCHANGE | REFUND_ONLY
+
+model ReturnRequest {
+  id                String   @id @default(cuid())
+  orderId           String
+  order             Order    @relation(fields: [orderId], references: [id])
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  type              String
+  reason            String
+  details           String?
+  itemsJson         String
+  imagesJson        String?
+  status            String   @default("REQUESTED")
+  refundAmountPaise Int?
+  adminNote         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REVIEWS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Review {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  rating     Int
+  title      String?
+  body       String?
+  imagesJson String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([productId, userId])
+  @@index([productId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPARE — Item 14 (server-side compare list for authenticated users)
+// ─────────────────────────────────────────────────────────────────────────────
+// Anonymous users keep their compare list in the `sc_compare_v1` cookie
+// (see src/lib/account/compare.ts). On login, the cookie list is merged
+// into this table via POST /api/compare/sync. The (userId, productId)
+// unique index lets a malformed concurrent POST land idempotently.
+model CompareItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  addedAt   DateTime @default(now())
+
+  user      User     @relation(fields: [userId],    references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId, addedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STORE ASSETS — Item 17 (generic upload registry)
+// ─────────────────────────────────────────────────────────────────────────────
+// Every successful POST /api/admin/uploads records one row here. Powers
+// the asset health dashboard, the asset browser, and per-asset deletion.
+// `url` is unique — the upload pipeline already guarantees unique
+// random filenames, so duplicate inserts would only occur on a bug.
+model StoreAsset {
+  id         String   @id @default(cuid())
+  // One of: logo | favicon | og_image | app_icon | brand | category |
+  // category_banner | category_icon | hero | promotion | misc.
+  // Source of truth: src/lib/uploads/adminImages.ts (ADMIN_IMAGE_KINDS).
+  kind       String
+  url        String   @unique
+  altText    String?
+  width      Int?
+  height     Int?
+  mimeType   String?
+  bytes      Int?
+  uploadedBy String
+  uploader   User     @relation("StoreAssetUploader", fields: [uploadedBy], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([kind, createdAt])
+  @@index([uploadedBy])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOMEPAGE CMS — Item 18 (admin-composable storefront landing page)
+// ─────────────────────────────────────────────────────────────────────────────
+// `HomepageSection` is the ordered list of section blocks that make up
+// the storefront homepage. `kind` is the discriminator the renderer
+// switches on; `config` is a JSON blob whose per-kind shape is
+// validated by Zod in src/lib/cms/homepageSchemas.ts. Scheduling via
+// `startsAt` / `endsAt` (both NULL = always visible).
+model HomepageSection {
+  id           String   @id @default(cuid())
+  kind         String
+  // Stable admin handle — unique. Used in log lines + URLs.
+  slug         String   @unique
+  title        String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  // Per-kind JSON config. Empty `{}` is valid.
+  config       String   @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@index([startsAt, endsAt])
+}
+
+// Trust-metric tiles surfaced by the STORE_METRICS section.
+model HomepageMetric {
+  id           String   @id @default(cuid())
+  label        String
+  value        String
+  caption      String?
+  iconUrl      String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+}
+
+// Physical store locations surfaced by the BRANCHES section.
+model HomepageBranch {
+  id           String   @id @default(cuid())
+  name         String
+  city         String
+  address      String?
+  phone        String?
+  imageUrl     String?
+  linkUrl      String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MARKETING — coupons, promotions, campaigns, push
+// ─────────────────────────────────────────────────────────────────────────────
+// DiscountType: PERCENT | FLAT | FREE_SHIPPING
+
+model Coupon {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  description      String?
+  discountType     String
+  value            Int      // percent (0-100) OR paise
+  minOrderPaise    Int      @default(0)
+  maxDiscountPaise Int?
+  usageLimit       Int?
+  perUserLimit     Int?
+  validFrom        DateTime
+  validUntil       DateTime
+  appliesToB2B     Boolean  @default(false)
+  appliesToB2C     Boolean  @default(true)
+  isActive         Boolean  @default(true)
+  usedCount        Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  orders Order[]
+
+  @@index([code])
+}
+
+model Promotion {
+  id          String   @id @default(cuid())
+  name        String
+  bannerUrl   String?
+  linkUrl     String?
+  description String?
+  validFrom   DateTime
+  validUntil  DateTime
+  position    String   // HOME_HERO, HOME_STRIP, SIDEBAR
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HERO BANNER — Feature #15 (homepage hero carousel CMS).
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Admin-managed slides for the homepage hero carousel. Each row is a single
+// slide. The frontend carousel sorts active+in-window rows by displayOrder
+// (ASC) and renders them.
+//
+// Why a dedicated table and not a re-use of Promotion?
+//   - Promotion holds banner *content* but not headline / subheadline / CTA
+//     copy / per-breakpoint imagery. The marketing surface needs all four.
+//   - Promotion is also used by /admin/promotions for sidebar / strip
+//     placements; conflating the two would put churn on a model that
+//     governs other UX.
+//
+// Lifecycle:
+//   - isActive=false hides the slide regardless of dates.
+//   - startsAt/endsAt are OPTIONAL — null = no bound on that side. This is
+//     how an admin pins an "evergreen" hero (no schedule). When both are
+//     set, the slide is visible only when `now ∈ [startsAt, endsAt]`.
+//   - displayOrder governs render order; ties broken by createdAt DESC.
+//
+// Image strategy (per spec): separate desktop + mobile images. The
+// frontend uses `<picture>` to pick the right one without JS so the right
+// asset downloads on the right device.
+model HeroBanner {
+  id              String    @id @default(cuid())
+  // Internal admin label — never shown to shoppers.
+  name            String
+  // Marketing copy. Headline is required; subheadline is optional.
+  headline        String
+  subheadline     String?
+  // CTA button. Both fields nullable — a banner may be purely informational.
+  ctaLabel        String?
+  ctaHref         String?
+  // Background images. `imageDesktopUrl` is required; mobile falls back to desktop.
+  imageDesktopUrl String
+  imageMobileUrl  String?
+  // Accessibility — alt text used on both <img>s; if blank, slide is
+  // decorative (alt="") and the headline carries the announcement.
+  imageAlt        String?
+  // Optional text colour override ("light" | "dark"). Null = auto/light.
+  textColor       String?
+  // Optional translucent overlay tint to improve text contrast (0-100).
+  overlayOpacity  Int       @default(35)
+
+  // ── Lifecycle ───────────────────────────────────────────────────────────
+  isActive        Boolean   @default(true)
+  displayOrder    Int       @default(0)
+  startsAt        DateTime?
+  endsAt          DateTime?
+
+  // ── Audit ──────────────────────────────────────────────────────────────
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdById     String?
+  updatedById     String?
+
+  @@index([isActive, displayOrder])
+  @@index([startsAt, endsAt])
+}
+
+model EmailCampaign {
+  id             String   @id @default(cuid())
+  subject        String
+  bodyHtml       String
+  audience       String   // ALL | B2C | B2B | SEGMENT_JSON
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  recipientCount Int?
+  createdAt      DateTime @default(now())
+}
+
+model PushNotification {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  audience  String
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOYALTY, REFERRALS, SUBSCRIPTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model LoyaltyLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta     Int
+  reason    String   // ORDER, REFERRAL, REVIEW, ADMIN_ADJUST, REDEEM
+  refId     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Subscription {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId    String
+  variantId    String?
+  quantity     Int      @default(1)
+  intervalDays Int
+  nextOrderAt  DateTime
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([nextOrderAt, isActive])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUPPORT — tickets + lightweight live chat (no third party)
+// ─────────────────────────────────────────────────────────────────────────────
+// TicketStatus: OPEN | AWAITING_CUSTOMER | AWAITING_AGENT | RESOLVED | CLOSED
+
+model SupportTicket {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  subject   String
+  category  String          // ORDER, PAYMENT, RETURN, TECH, OTHER
+  orderId   String?
+  status    String          @default("OPEN")
+  priority  String          @default("NORMAL")
+  messages  TicketMessage[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model TicketMessage {
+  id         String        @id @default(cuid())
+  ticketId   String
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId   String
+  body       String
+  imagesJson String?
+  createdAt  DateTime      @default(now())
+
+  @@index([ticketId])
+}
+
+model ChatRoom {
+  id        String        @id @default(cuid())
+  userId    String        @unique
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String        @default("OPEN")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  fromId    String
+  from      User     @relation(fields: [fromId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([roomId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// B2B — tiered pricing + quote requests
+// ─────────────────────────────────────────────────────────────────────────────
+
+model B2BTier {
+  id              String  @id @default(cuid())
+  name            String  @unique
+  discountPercent Float   @default(0)
+  minOrderPaise   Int     @default(0)
+  isActive        Boolean @default(true)
+  users           User[]
+}
+
+model QuoteRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  itemsJson String
+  note      String?
+  status    String   @default("OPEN") // OPEN, QUOTED, ACCEPTED, DECLINED
+  quoteJson String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STORE CONFIG — admin-editable rules (refund/return/cancel windows etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model StoreConfig {
+  id        String   @id @default("singleton")
+  data      String   // JSON; see DEFAULT_STORE_CONFIG in src/lib/config.ts
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDEMPOTENCY — guarantees one purchase intent → at most one order
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Generic across endpoints (currently used by /api/checkout/place-order).
+// Status lifecycle:
+//   PROCESSING — INSERTed at the start of the operation; other concurrent
+//                callers with the same (userId, key) see this row and poll.
+//   SUCCEEDED  — operation completed; `result` holds the JSON we returned.
+//   FAILED     — operation completed with an error; `result` holds the error
+//                envelope. Retries with the same key get the SAME error rather
+//                than re-running (so the user sees a stable outcome).
+//
+// The unique constraint on (userId, key) is what gives us "exactly once":
+// if two concurrent requests race the INSERT, exactly one wins; the loser
+// observes the row and waits.
+//
+// `requestFingerprint` is a SHA-256 of the normalised request payload. If a
+// client REUSES a key with a different payload we return 409 — that's a
+// programming error / replay attack, not an idempotent retry.
+
+model IdempotencyKey {
+  id                 String   @id @default(cuid())
+  userId             String
+  key                String
+  endpoint           String   // e.g. 'POST /api/checkout/place-order'
+  status             String   // PROCESSING | SUCCEEDED | FAILED
+  requestFingerprint String   // sha256 hex of normalised request
+  resultStatus       Int?     // HTTP status of the original response
+  resultBody         String?  // JSON body of the original response
+  resultOrderId      String?  // convenience pointer for checkout flows
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  expiresAt          DateTime // pruned by daily cron
+
+  @@unique([userId, key])
+  @@index([expiresAt])
+  @@index([resultOrderId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UTR SUBMISSIONS — anti-fraud audit log + global uniqueness constraint
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Every UTR a customer submits is recorded here, even rejected attempts.
+// The unique constraint on `utrNormalized` provides ABSOLUTE protection
+// against UTR-reuse fraud: even a race between two simultaneous orders is
+// resolved by the DB; the second INSERT fails and the order is rejected.
+//
+// Rejected attempts (status='REJECTED_FORMAT' | 'REJECTED_FRAUD' |
+// 'REJECTED_DUPLICATE') are kept for forensics and rate-limit signal.
+// Accepted attempts (status='PENDING_REVIEW' | 'VERIFIED' | 'REJECTED_BY_ADMIN')
+// trace the admin's hands-on decision.
+//
+// `utrNormalized` is the sanitised value (uppercased, alphanumeric-only) —
+// this is what the unique constraint operates on. The raw `utrSubmitted`
+// is kept for forensics ("what did the customer actually type?").
+
+model UtrSubmission {
+  id             String   @id @default(cuid())
+  utrNormalized  String   // uppercased, alphanumeric-only — UNIQUE
+  utrSubmitted   String   // raw exactly as customer typed
+  paymentMethod  String   // UPI | IMPS | NEFT | RTGS
+  orderId        String?  // null while the order itself is being created
+  userId         String
+  amountPaise    Int      // the order's grand total at submission time
+  status         String   // ACCEPTED | REJECTED_FORMAT | REJECTED_FRAUD | REJECTED_DUPLICATE | VERIFIED | REJECTED_BY_ADMIN
+  rejectReason   String?
+  clientIp       String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  verifiedAt     DateTime?
+  verifiedBy     String?  // admin id
+
+  @@unique([utrNormalized])
+  @@index([orderId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPRESS CHECKOUT  (Feature — "Buy Now" direct-to-checkout)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// One row per active Buy-Now session, keyed by userId so rapid clicks
+// upsert the SAME row (no duplicates, no race storms). The cookie
+// `sc_express` (HttpOnly, Path=/) carries this row's id; the checkout page
+// looks it up by (cookie value, userId-from-session) and uses its contents
+// INSTEAD of the user's Cart table — leaving the cart completely untouched.
+//
+// Lifecycle:
+//   created  → user clicks Buy Now on PDP
+//   updated  → user clicks Buy Now again (upsert by userId; same row)
+//   consumed → placeOrder() sets consumedAt; row stays for audit + as a
+//              dedupe key against accidental re-submits
+//   expired  → expiresAt < now (default: 1h after creation/update)
+//   pruned   → nightly cron in scripts/backup.ts after the audit window
+//
+// The express row is the SINGLE SOURCE OF TRUTH for the express checkout
+// payload. We never trust the cookie's id alone — the row's userId MUST
+// match the requesting session.
+
+model ExpressCheckout {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId   String
+  variantId   String?
+  quantity    Int
+  // Set when placeOrder() succeeds; we keep the row briefly for audit and
+  // to short-circuit accidental re-submits.
+  consumedAt  DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId])          // one active express slot per user — upsert key
+  @@index([expiresAt])
+  @@index([consumedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIT LOG — every admin action
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  actor     User     @relation("AdminActor", fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  before    String?
+  after     String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([entity, entityId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BACKGROUND JOBS — SQLite-backed queue + scheduler
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Item 7 — Background Jobs System. See BUILD_LOG.md.
+//
+// Design intent:
+//   - Single-process, single-Node-instance deployment (one VPS, one DB file).
+//   - No Redis, no BullMQ, no external services — the queue rides on the
+//     same SQLite database every other model lives in. One backup covers it.
+//   - Atomic claim via `updateMany WHERE status='PENDING'` — the WHERE clause
+//     is the race guard. Two concurrent runners (we have only one, but the
+//     property is essential to correctness) can't both promote the same row.
+//   - Stuck-PROCESSING recovery: a job whose `lockExpiresAt` has passed is
+//     considered crashed and reclaimed back to PENDING by the next poll.
+//   - Replaceable: should we outgrow SQLite, the queue can be migrated to
+//     Redis/BullMQ by swapping `src/lib/jobs/producer.ts` + `runner.ts` —
+//     the rest of the codebase only knows `enqueueJob(type, payload)`.
+
+model Job {
+  id              String    @id @default(cuid())
+  type            String    // see src/lib/jobs/jobTypes.ts — JOB_TYPES registry
+  status          String    @default("PENDING")   // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
+  payload         String    @default("{}")        // JSON-stringified, validated by the worker's Zod schema
+  result          String?                         // JSON on success
+  error           String?                         // JSON on failure: { name, code, message }
+  priority        Int       @default(0)           // higher wins the tiebreaker
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
+  runAt           DateTime  @default(now())       // earliest pickup time
+  startedAt       DateTime?
+  completedAt     DateTime?
+  failedAt        DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  queueName       String    @default("default")   // logical queue separation (future)
+  parentJobId     String?                         // for future job chains
+  // Lock token + TTL implement the race-free claim. lockToken is rotated
+  // (random uuid) every time a runner claims the row; the runner uses it
+  // as a fencing token if it ever needs to confirm it still owns the job
+  // (extendLock heartbeat). lockExpiresAt drives the stuck-job reclaim.
+  lockToken       String?
+  lockExpiresAt   DateTime?
+
+  @@index([status, runAt, priority])
+  @@index([type, status])
+  @@index([queueName, status, runAt])
+  @@index([parentJobId])
+}
+
+model JobSchedule {
+  id              String    @id @default(cuid())
+  name            String    @unique               // stable id: 'cleanup.expired_otps', etc.
+  jobType         String    // value from JOB_TYPES
+  payload         String    @default("{}")        // JSON template enqueued each tick
+  cronExpression  String    // 5-field cron: `m h dom mon dow` — interpreted in UTC
+  queueName       String    @default("default")
+  isActive        Boolean   @default(true)
+  lastRunAt       DateTime?
+  nextRunAt       DateTime  // computed from cronExpression at insert + after every fire
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isActive, nextRunAt])
+}

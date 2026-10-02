@@ -1,0 +1,49 @@
+# deps
+node_modules
+.pnp
+.pnp.js
+
+# next
+.next
+out
+build
+dist
+
+# env
+.env
+.env.local
+.env.*.local
+
+# data (DO NOT commit DB or uploads)
+data/store.db
+data/store.db-journal
+data/uploads/*
+!data/uploads/.gitkeep
+# Item 8 — runtime maintenance-mode snapshot (written by the
+# admin PATCH handler). Never committed.
+data/maintenance.json
+data/backups/
+data/audit-archive/
+
+# secrets
+secrets/
+
+# logs
+*.log
+npm-debug.log*
+
+# os / editor
+.DS_Store
+.vscode
+.idea
+
+# coverage
+coverage
+.nyc_output
+
+# build artifacts & caches
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+.fallow/
+output.json
+.turbo/

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" width="280" height="280" role="img" aria-label="Placeholder UPI QR — replace with your real QR image">
+  <rect width="280" height="280" fill="#ffffff"/>
+  <rect x="10" y="10" width="260" height="260" fill="none" stroke="#0f172a" stroke-width="2" rx="6"/>
+  <!-- Synthetic QR-like pattern (NOT scannable) -->
+  <g fill="#0f172a">
+    <!-- finder patterns -->
+    <rect x="22" y="22" width="56" height="56" fill="none" stroke="#0f172a" stroke-width="8"/>
+    <rect x="38" y="38" width="24" height="24"/>
+    <rect x="202" y="22" width="56" height="56" fill="none" stroke="#0f172a" stroke-width="8"/>
+    <rect x="218" y="38" width="24" height="24"/>
+    <rect x="22" y="202" width="56" height="56" fill="none" stroke="#0f172a" stroke-width="8"/>
+    <rect x="38" y="218" width="24" height="24"/>
+    <!-- noisy modules -->
+    <g>
+      <rect x="100" y="40" width="10" height="10"/><rect x="120" y="40" width="10" height="10"/>
+      <rect x="140" y="50" width="10" height="10"/><rect x="160" y="40" width="10" height="10"/>
+      <rect x="100" y="60" width="10" height="10"/><rect x="180" y="60" width="10" height="10"/>
+      <rect x="90"  y="80" width="10" height="10"/><rect x="110" y="80" width="10" height="10"/>
+      <rect x="130" y="80" width="10" height="10"/><rect x="170" y="80" width="10" height="10"/>
+      <rect x="100" y="100" width="10" height="10"/><rect x="140" y="100" width="10" height="10"/>
+      <rect x="160" y="110" width="10" height="10"/><rect x="180" y="100" width="10" height="10"/>
+      <rect x="80"  y="120" width="10" height="10"/><rect x="120" y="120" width="10" height="10"/>
+      <rect x="150" y="130" width="10" height="10"/><rect x="190" y="120" width="10" height="10"/>
+      <rect x="100" y="140" width="10" height="10"/><rect x="130" y="150" width="10" height="10"/>
+      <rect x="170" y="140" width="10" height="10"/><rect x="200" y="150" width="10" height="10"/>
+      <rect x="90"  y="160" width="10" height="10"/><rect x="120" y="160" width="10" height="10"/>
+      <rect x="160" y="170" width="10" height="10"/><rect x="200" y="170" width="10" height="10"/>
+      <rect x="100" y="180" width="10" height="10"/><rect x="150" y="190" width="10" height="10"/>
+      <rect x="190" y="180" width="10" height="10"/><rect x="120" y="200" width="10" height="10"/>
+      <rect x="160" y="210" width="10" height="10"/><rect x="200" y="200" width="10" height="10"/>
+    </g>
+  </g>
+  <text x="140" y="270" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="9" fill="#64748b">
+    PLACEHOLDER — replace /public/payment/qr.svg with your real QR
+  </text>
+</svg>

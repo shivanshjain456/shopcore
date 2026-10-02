@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NODE_ENV: test
+      APP_NAME: ShopCore
+      APP_URL: http://localhost:3000
+      DATABASE_URL: "file:../data/store.db"
+      SESSION_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      CSRF_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      SHOPCORE_ALLOW_TEST_EMAILS: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Apply Database Migrations
+        run: npx prisma migrate deploy
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Master Verification Test Suite
+        run: npm test
+
+      - name: Run Next.js Production Build
+        run: npm run build
