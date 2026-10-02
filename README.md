@@ -2,7 +2,7 @@
 
 > High-integrity B2C storefront, B2B procurement portal, and operations dashboard engineered with strict integer-money discipline, zero-trust pricing, and atomic inventory safety.
 
-[![CI](https://github.com/your-username/shopcore/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/shopcore/actions/workflows/ci.yml)
+[![CI](https://github.com/shivanshjain456/shopcore/actions/workflows/ci.yml/badge.svg)](https://github.com/shivanshjain456/shopcore/actions/workflows/ci.yml)
 [![Node Version](https://img.shields.io/badge/node-v20%20%7C%20v21%20%7C%20v22-blue)](https://nodejs.org)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2.18%20App%20Router-black)](https://nextjs.org)
 [![Prisma](https://img.shields.io/badge/Prisma-5.22.0%20SQLite%20WAL-indigo)](https://www.prisma.io)
@@ -222,7 +222,7 @@ $ npm test
 
 ### 1. Clone and Install
 ```bash
-git clone https://github.com/your-username/shopcore.git
+git clone https://github.com/shivanshjain456/shopcore.git
 cd shopcore
 npm install --no-audit --no-fund
 ```

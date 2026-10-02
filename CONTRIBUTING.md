@@ -27,7 +27,7 @@ ShopCore is built with production-grade engineering standards. Every contributio
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/shopcore.git
+git clone https://github.com/shivanshjain456/shopcore.git
 cd shopcore
 
 # 2. Install dependencies
