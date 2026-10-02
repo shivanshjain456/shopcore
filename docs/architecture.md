@@ -1,6 +1,15 @@
-# ShopCore — Architecture & System Design
+# ShopCore Architecture & System Design
 
 ShopCore is a full-stack, production-grade e-commerce and financial transaction platform built with Next.js 14 App Router, TypeScript, Prisma, and SQLite. It provides a B2C storefront, a B2B verified-buyer portal, an administrative CMS, and an integrated transaction engine.
+
+---
+
+## Interactive Architecture Diagrams
+
+Editable vector diagrams are maintained in [`docs/architecture/`](./architecture/README.md):
+
+* **System Architecture & Trust Boundaries**: [Open in Lightbox](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=architecture.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Farchitecture.drawio.svg) | [Edit Diagram](https://app.diagrams.net/#Hshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Farchitecture.drawio.svg)
+* **Transactional Checkout & Inventory Locking Flow**: [Open in Lightbox](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=core-flows.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Fcore-flows.drawio.svg) | [Edit Diagram](https://app.diagrams.net/#Hshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Fcore-flows.drawio.svg)
 
 ---
 

@@ -39,56 +39,21 @@
 
 ## Architecture and System Topology
 
-```
-+-----------------------------------------------------------------------------------+
-|                                 Client Requests                                   |
-|             (B2C Shoppers, B2B Verified Buyers, Back-Office Staff)                |
-+-----------------------------------------------------------------------------------+
-                                         |
-                                         v
-+-----------------------------------------------------------------------------------+
-|                        Next.js Middleware & Security Layer                        |
-|   - Request ID Correlation (AsyncLocalStorage)                                    |
-|   - Content Security Policy (strict script-src 'self' in production)              |
-|   - Dual Cookie Gatekeeper (sc_session for /account, sc_admin for /admin)         |
-|   - Tiered In-Memory Rate Limiting (30 typed security policies)                   |
-+-----------------------------------------------------------------------------------+
-                                         |
-                                         v
-+-----------------------------------------------------------------------------------+
-|                          Next.js 14 App Router (SSR + RSC)                        |
-|                                                                                   |
-|  [B2C Storefront]              [B2B Wholesale Portal]        [Admin Operations]   |
-|  - Dynamic CMS Landing Page    - GSTIN Checksum Validator    - 26 Modular Views   |
-|  - Server-Side Cart & Wishlist - Tiered Price Matrices       - CMS Section Studio |
-|  - Multi-Image Interactive PDP - Bulk CSV Procurement        - Inventory & Orders |
-|  - Native Fullscreen Lightbox  - Quote Negotiation Engine    - Audit Log Ledger   |
-+-----------------------------------------------------------------------------------+
-                                         |
-                                         v
-+-----------------------------------------------------------------------------------+
-|                       Service Layer & Domain Guardrails                           |
-|   - Order Engine: Idempotency check, atomic inventory locks, address snapshot    |
-|   - Pricing Service: Role-aware effectivePricePaise calculation                   |
-|   - Media Service: Sharp EXIF-stripping, format branching, designed SVG fallbacks |
-|   - Notification: Nodemailer over authenticated SMTP with background retries      |
-+-----------------------------------------------------------------------------------+
-                                         |
-                                         v
-+-----------------------------------------------------------------------------------+
-|                          Data & Persistence Engine                                |
-|   - Prisma ORM (v5.22.0) with strict relations across 52 models                   |
-|   - SQLite in WAL Mode (Single writer serialization guarantees ACID checkouts)    |
-|   - Atomic VACUUM INTO snapshots with live integrity verification                 |
-+-----------------------------------------------------------------------------------+
-                                         ^
-                                         | (Polls & Claims)
-+-----------------------------------------------------------------------------------+
-|                         In-Process Background Worker                              |
-|   - 11 Worker Handlers: Low-stock alerts, session sweeps, backup rotations        |
-|   - Lock-expiry recovery, exponential backoff, and graceful SIGTERM drain         |
-+-----------------------------------------------------------------------------------+
-```
+The diagram below illustrates ShopCore's C4 Container and Component model, mapping the flow from untrusted client surfaces through the Next.js 14 application boundary down to the SQLite WAL persistence layer and external payment gateways.
+
+[![ShopCore System Architecture and Trust Boundaries](docs/architecture/architecture.drawio.svg)](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=architecture.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Farchitecture.drawio.svg)
+
+> **Interactive Diagram Navigation:**
+> [Open interactive diagram](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=architecture.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Farchitecture.drawio.svg) | [Edit diagram](https://app.diagrams.net/#Hshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Farchitecture.drawio.svg) | [Diagram source](docs/architecture/architecture.drawio.svg) | [Architecture docs](docs/architecture/README.md)
+> 
+> *Secondary Flow:* [Open Checkout Flow diagram](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=core-flows.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Fcore-flows.drawio.svg) | [Edit Checkout Flow](https://app.diagrams.net/#Hshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Fcore-flows.drawio.svg)
+
+### Key Architectural Decisions Visible in the Diagram
+
+1. **Zero-Trust Financial Recomputation**: The client surface never passes authoritative monetary amounts to the database. The server re-queries product unit prices and recalculates subtotals, discounts, and taxes exclusively in integer cents (`cents = price * qty`).
+2. **Pessimistic Inventory Locking**: Stock reservations execute conditional decrements (`WHERE stock >= requested_qty`) with 15-minute expiration timestamps, eliminating race conditions during flash sales.
+3. **Idempotent Webhook Reconciliation**: Stripe webhook dispatches are validated against HMAC-SHA256 signatures via raw body payloads and recorded in a `processed_events` ledger to guarantee exactly-once order transitions.
+4. **Dual Authentication Gatekeeper**: Isolates customer storefront identity (`sc_session`) from back-office administrative access (`sc_admin`) with role-based routing at the edge middleware level.
 
 ---
 

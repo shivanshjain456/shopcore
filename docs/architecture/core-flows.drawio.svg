@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1140" height="820" viewBox="0 0 1140 820" content="&lt;mxfile host=&quot;app.diagrams.net&quot; modified=&quot;2026-10-03T02:00:00.000Z&quot; agent=&quot;Mozilla/5.0&quot; version=&quot;24.0.0&quot; type=&quot;embed&quot;&gt;
+  &lt;diagram id=&quot;shopcore-flows&quot; name=&quot;ShopCore Checkout Flow&quot;&gt;
+    &lt;mxGraphModel dx=&quot;1200&quot; dy=&quot;800&quot; grid=&quot;1&quot; gridSize=&quot;10&quot; guides=&quot;1&quot; tooltips=&quot;1&quot; connect=&quot;1&quot; arrows=&quot;1&quot; fold=&quot;1&quot; page=&quot;1&quot; pageScale=&quot;1&quot; pageWidth=&quot;1140&quot; pageHeight=&quot;820&quot; math=&quot;0&quot; shadow=&quot;0&quot;&gt;
+      &lt;root&gt;
+        &lt;mxCell id=&quot;0&quot; /&gt;
+        &lt;mxCell id=&quot;1&quot; parent=&quot;0&quot; /&gt;
+        
+        &lt;mxCell id=&quot;flow-header&quot; value=&quot;&amp;lt;b&amp;gt;ShopCore — Transactional Checkout &amp;amp;amp; Inventory Locking Flow&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;End-to-End Sequence • Zero-Trust Price Recomputation • Pessimistic Inventory Lock • Webhook Reconciliation&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;fontColor=#FFFFFF;align=left;spacingLeft=20;fontSize=13;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;40&quot; y=&quot;30&quot; width=&quot;1060&quot; height=&quot;70&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        
+        &lt;mxCell id=&quot;step1&quot; value=&quot;&amp;lt;b&amp;gt;1. Submit Cart &amp;amp;amp; Key&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Client sends cart items + Idempotency-Key&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;40&quot; y=&quot;125&quot; width=&quot;230&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step2&quot; value=&quot;&amp;lt;b&amp;gt;2. Auth &amp;amp;amp; Rate Limit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Verify session JWT, check rate limit&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;315&quot; y=&quot;125&quot; width=&quot;230&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step3&quot; value=&quot;&amp;lt;b&amp;gt;3. Price Recomputation&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Recalculate all totals in integer cents from DB&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;590&quot; y=&quot;125&quot; width=&quot;230&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step4&quot; value=&quot;&amp;lt;b&amp;gt;4. Idempotency Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Hash key, return cached or acquire lock&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;865&quot; y=&quot;125&quot; width=&quot;235&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step5&quot; value=&quot;&amp;lt;b&amp;gt;5. Atomic Stock Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;WHERE stock &amp;amp;gt;= qty (15-min TTL)&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;865&quot; y=&quot;285&quot; width=&quot;235&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step6&quot; value=&quot;&amp;lt;b&amp;gt;6. Stripe Session&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Create Stripe hosted checkout session&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1F2;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;590&quot; y=&quot;285&quot; width=&quot;230&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step7&quot; value=&quot;&amp;lt;b&amp;gt;7. Pending Order&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Status PENDING, commit DB transaction&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#6366F1;fontColor=#1E1B4B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;315&quot; y=&quot;285&quot; width=&quot;230&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step8&quot; value=&quot;&amp;lt;b&amp;gt;8. Customer Pays&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Browser redirects to Stripe, pays&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;40&quot; y=&quot;285&quot; width=&quot;230&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step9&quot; value=&quot;&amp;lt;b&amp;gt;9. Webhook Ingest&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;checkout.session.completed with HMAC&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1F2;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;40&quot; y=&quot;455&quot; width=&quot;310&quot; height=&quot;115&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step10&quot; value=&quot;&amp;lt;b&amp;gt;10. HMAC &amp;amp;amp; Dedup&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Verify sig, check processed_events table&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;415&quot; y=&quot;455&quot; width=&quot;310&quot; height=&quot;115&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+        &lt;mxCell id=&quot;step11&quot; value=&quot;&amp;lt;b&amp;gt;11. Order Commit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Status -&amp;amp;gt; PAID, reserve -&amp;amp;gt; COMMITTED&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+          &lt;mxGeometry x=&quot;790&quot; y=&quot;455&quot; width=&quot;310&quot; height=&quot;115&quot; as=&quot;geometry&quot; /&gt;
+        &lt;/mxCell&gt;
+      &lt;/root&gt;
+    &lt;/mxGraphModel&gt;
+  &lt;/diagram&gt;
+&lt;/mxfile&gt;">
+  <defs>
+    <style type="text/css">
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+      .title { font-weight: 700; fill: #0F172A; }
+      .subtitle { font-weight: 500; fill: #475569; }
+      .box-title { font-weight: 600; font-size: 14px; fill: #0F172A; }
+      .box-desc { font-weight: 400; font-size: 11px; fill: #475569; }
+      .badge-text { font-weight: 600; font-size: 10px; }
+      .boundary-title { font-weight: 700; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+      .edge-label { font-weight: 500; font-size: 11px; fill: #334155; background: #FFFFFF; }
+    </style>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feColorMatrix type="matrix" values="0 0 0 0 0.05   0 0 0 0 0.09   0 0 0 0 0.16  0 0 0 0.06 0" />
+      <feOffset dx="0" dy="2" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB" />
+    </marker>
+    <marker id="arrow-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED" />
+    </marker>
+  </defs>
+
+  <!-- Clean Canvas Background -->
+  <rect width="100%" height="100%" fill="#F8FAFC" rx="12" stroke="#CBD5E1" stroke-width="1.5" />
+  
+  
+  <!-- Header Banner -->
+  <g transform="translate(40, 30)">
+    <rect x="0" y="0" width="1060" height="70" rx="8" fill="#0F172A" />
+    <text x="24" y="32" font-size="20" font-weight="700" fill="#FFFFFF">ShopCore — Transactional Checkout &amp; Inventory Locking Flow</text>
+    <text x="24" y="54" font-size="12" font-weight="400" fill="#94A3B8">End-to-End Sequence • Zero-Trust Price Recomputation • Pessimistic Inventory Lock • Webhook Reconciliation</text>
+    <rect x="860" y="22" width="175" height="26" rx="13" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+    <text x="947" y="39" font-size="11" font-weight="600" fill="#10B981" text-anchor="middle">ACID Safe Flow</text>
+  </g>
+
+  <!-- Step 1: Client Submission -->
+  <g transform="translate(40, 125)">
+    <rect x="0" y="0" width="230" height="100" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#3B82F6" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#1E3A8A">Submit Cart &amp; Key</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Client sends cart item IDs &amp; qty</text>
+    <text x="14" y="68" font-size="11" fill="#334155">• Generates Idempotency-Key</text>
+    <text x="14" y="84" font-size="10" font-weight="600" fill="#2563EB">POST /api/checkout</text>
+  </g>
+
+  <!-- Connector 1 -> 2 -->
+  <path d="M 270 175 L 310 175" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 2: Rate Limit & Auth -->
+  <g transform="translate(315, 125)">
+    <rect x="0" y="0" width="230" height="100" rx="8" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#8B5CF6" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#4C1D95">Auth &amp; Rate Limit</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Verify HTTP-only session JWT</text>
+    <text x="14" y="68" font-size="11" fill="#334155">• Check user request bucket</text>
+    <text x="14" y="84" font-size="10" font-weight="600" fill="#7C3AED">Edge Middleware Inspection</text>
+  </g>
+
+  <!-- Connector 2 -> 3 -->
+  <path d="M 545 175 L 585 175" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 3: Zero-Trust Price Recomputation -->
+  <g transform="translate(590, 125)">
+    <rect x="0" y="0" width="230" height="100" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#10B981" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#064E3B">Price Recomputation</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Discards client-provided prices</text>
+    <text x="14" y="68" font-size="11" fill="#334155">• Queries live DB price_cents</text>
+    <text x="14" y="84" font-size="10" font-weight="600" fill="#059669">Strict integer cents math</text>
+  </g>
+
+  <!-- Connector 3 -> 4 -->
+  <path d="M 820 175 L 860 175" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 4: Idempotency Lock -->
+  <g transform="translate(865, 125)">
+    <rect x="0" y="0" width="235" height="100" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#F59E0B" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#78350F">Idempotency Lock</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Hash Idempotency-Key</text>
+    <text x="14" y="68" font-size="11" fill="#334155">• If duplicate key: return cached</text>
+    <text x="14" y="84" font-size="10" font-weight="600" fill="#D97706">INSERT idempotency_keys</text>
+  </g>
+
+  <!-- Connector 4 -> 5 (Down) -->
+  <path d="M 982 225 L 982 280" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 5: Atomic Inventory Lock -->
+  <g transform="translate(865, 285)">
+    <rect x="0" y="0" width="235" height="105" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#10B981" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#064E3B">Atomic Stock Lock</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• UPDATE products SET stock = stock - q</text>
+    <text x="14" y="66" font-size="11" fill="#334155">• WHERE stock &gt;= q (Row lock)</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• 15-min reservation TTL</text>
+    <text x="14" y="98" font-size="10" font-weight="600" fill="#059669">409 Conflict if out of stock</text>
+  </g>
+
+  <!-- Connector 5 -> 6 (Left) -->
+  <path d="M 865 337 L 825 337" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 6: Create Stripe Session -->
+  <g transform="translate(590, 285)">
+    <rect x="0" y="0" width="230" height="105" rx="8" fill="#FFF1F2" stroke="#F43F5E" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#F43F5E" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#9F1239">Create Stripe Session</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• Dispatches verified total cents</text>
+    <text x="14" y="66" font-size="11" fill="#334155">• Metadata: order_id, reservation_id</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• Stripe returns checkout URL</text>
+    <text x="14" y="98" font-size="10" font-weight="600" fill="#E11D48">Stripe Hosted Checkout</text>
+  </g>
+
+  <!-- Connector 6 -> 7 (Left) -->
+  <path d="M 590 337 L 550 337" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 7: Order Record PENDING -->
+  <g transform="translate(315, 285)">
+    <rect x="0" y="0" width="230" height="105" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#6366F1" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">7</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#1E1B4B">Create Pending Order</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• Status: PENDING</text>
+    <text x="14" y="66" font-size="11" fill="#334155">• Stores Stripe session_id</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• Commits DB transaction</text>
+    <text x="14" y="98" font-size="10" font-weight="600" fill="#4F46E5">Returns 201 + Checkout URL</text>
+  </g>
+
+  <!-- Connector 7 -> 8 (Left) -->
+  <path d="M 315 337 L 275 337" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 8: Customer Pays at Stripe -->
+  <g transform="translate(40, 285)">
+    <rect x="0" y="0" width="230" height="105" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#3B82F6" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">8</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#1E3A8A">Customer Payment</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• Browser redirects to Stripe</text>
+    <text x="14" y="66" font-size="11" fill="#334155">• Enters card / Apple Pay / UPI</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• 3DS authentication if required</text>
+    <text x="14" y="98" font-size="10" font-weight="600" fill="#2563EB">Payment Authorized</text>
+  </g>
+
+  <!-- Connector 8 -> 9 (Down) -->
+  <path d="M 155 390 L 155 450" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 9: Webhook Delivery -->
+  <g transform="translate(40, 455)">
+    <rect x="0" y="0" width="310" height="115" rx="8" fill="#FFF1F2" stroke="#F43F5E" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#F43F5E" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">9</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#9F1239">Stripe Dispatches Webhook</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Event: checkout.session.completed</text>
+    <text x="14" y="70" font-size="11" fill="#334155">• Signed with HMAC SHA-256 header (Stripe-Signature)</text>
+    <text x="14" y="88" font-size="11" fill="#334155">• Ingested via raw body buffer at /api/webhooks/stripe</text>
+    <text x="14" y="106" font-size="10" font-weight="600" fill="#E11D48">Zero spoofing trust boundary</text>
+  </g>
+
+  <!-- Connector 9 -> 10 (Right) -->
+  <path d="M 350 512 L 410 512" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 10: Signature Check & Dedup -->
+  <g transform="translate(415, 455)">
+    <rect x="0" y="0" width="310" height="115" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#F59E0B" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">10</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#78350F">HMAC Signature &amp; Dedup</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• stripe.webhooks.constructEvent(rawBody, sig)</text>
+    <text x="14" y="70" font-size="11" fill="#334155">• Check processed_events table by event.id</text>
+    <text x="14" y="88" font-size="11" fill="#334155">• If duplicate: return 200 OK immediately (no-op)</text>
+    <text x="14" y="106" font-size="10" font-weight="600" fill="#D97706">Guarantees exactly-once processing</text>
+  </g>
+
+  <!-- Connector 10 -> 11 (Right) -->
+  <path d="M 725 512 L 785 512" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
+
+  <!-- Step 11: Final Order Transition & Audit -->
+  <g transform="translate(790, 455)">
+    <rect x="0" y="0" width="310" height="115" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5" filter="url(#shadow)" />
+    <circle cx="24" cy="24" r="12" fill="#10B981" />
+    <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">11</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#064E3B">Order Commit &amp; Audit Log</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Transition order status: PENDING -&gt; PAID</text>
+    <text x="14" y="70" font-size="11" fill="#334155">• Mark inventory_reservations as COMMITTED</text>
+    <text x="14" y="88" font-size="11" fill="#334155">• Insert audit_log record with event payload</text>
+    <text x="14" y="106" font-size="10" font-weight="600" fill="#059669">Dispatches confirmation email receipt</text>
+  </g>
+
+  <!-- Failure & Edge Case Callouts (Bottom) -->
+  <g transform="translate(40, 600)">
+    <rect x="0" y="0" width="1060" height="185" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" filter="url(#shadow)" />
+    <text x="20" y="26" font-size="13" font-weight="700" fill="#0F172A">CRITICAL FAILURE MODES &amp; DISTRIBUTED RECOVERY STRATEGIES</text>
+    
+    <!-- Failure 1 -->
+    <g transform="translate(20, 40)">
+      <rect x="0" y="0" width="325" height="125" rx="6" fill="#FEF2F2" stroke="#EF4444" stroke-width="1" />
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#991B1B">Concurrent Stock Depletion</text>
+      <text x="14" y="40" font-size="11" fill="#450A0A">• Two users attempt to buy last item simultaneously.</text>
+      <text x="14" y="56" font-size="11" fill="#450A0A">• SQL WHERE stock &gt;= qty evaluates atomically.</text>
+      <text x="14" y="72" font-size="11" fill="#450A0A">• First request succeeds (rows_affected = 1).</text>
+      <text x="14" y="88" font-size="11" fill="#450A0A">• Second request returns 0 rows -&gt; 409 Conflict.</text>
+      <text x="14" y="106" font-size="10" font-weight="600" fill="#DC2626">Zero overselling guarantee</text>
+    </g>
+
+    <!-- Failure 2 -->
+    <g transform="translate(365, 40)">
+      <rect x="0" y="0" width="330" height="125" rx="6" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1" />
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#92400E">Abandoned Checkout Sessions</text>
+      <text x="14" y="40" font-size="11" fill="#78350F">• User reserves inventory but closes Stripe tab.</text>
+      <text x="14" y="56" font-size="11" fill="#78350F">• Reservation expires after 15-minute TTL.</text>
+      <text x="14" y="72" font-size="11" fill="#78350F">• Cleanup task restores stock to products table.</text>
+      <text x="14" y="88" font-size="11" fill="#78350F">• Order transitioned to EXPIRED automatically.</text>
+      <text x="14" y="106" font-size="10" font-weight="600" fill="#D97706">Prevents dead inventory lockups</text>
+    </g>
+
+    <!-- Failure 3 -->
+    <g transform="translate(715, 40)">
+      <rect x="0" y="0" width="325" height="125" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1" />
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#166534">Duplicate Webhook Retries</text>
+      <text x="14" y="40" font-size="11" fill="#14532D">• Stripe re-sends webhook if ACK latency &gt; 5s.</text>
+      <text x="14" y="56" font-size="11" fill="#14532D">• Handler checks processed_events by event.id.</text>
+      <text x="14" y="72" font-size="11" fill="#14532D">• Duplicate detected: immediately returns 200 OK.</text>
+      <text x="14" y="88" font-size="11" fill="#14532D">• State transitions and inventory remain untouched.</text>
+      <text x="14" y="106" font-size="10" font-weight="600" fill="#16A34A">Exact-once payment reconciliation</text>
+    </g>
+  </g>
+
+</svg>
