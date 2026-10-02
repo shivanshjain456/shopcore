@@ -23,7 +23,7 @@
 
 ---
 
-## Key Hiring Signals and Engineering Highlights
+## Key Engineering Highlights
 
 | Architectural Dimension | Engineering Implementation | Why It Matters |
 |---|---|---|
