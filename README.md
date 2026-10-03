@@ -39,7 +39,7 @@
 
 ## Architecture and System Topology
 
-The diagram below illustrates ShopCore's C4 Container and Component model, mapping the flow from untrusted client surfaces through the Next.js 14 application boundary down to the SQLite WAL persistence layer and external payment gateways.
+The diagram below illustrates ShopCore's C4 Container and Component model, mapping the flow from untrusted client surfaces through the Next.js 14 application boundary down to the SQLite WAL persistence layer and integrated UPI & banking settlement rails.
 
 [![ShopCore System Architecture and Trust Boundaries](docs/architecture/architecture.drawio.svg)](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=architecture.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Farchitecture.drawio.svg)
 
@@ -50,9 +50,9 @@ The diagram below illustrates ShopCore's C4 Container and Component model, mappi
 
 ### Key Architectural Decisions Visible in the Diagram
 
-1. **Zero-Trust Financial Recomputation**: The client surface never passes authoritative monetary amounts to the database. The server re-queries product unit prices and recalculates subtotals, discounts, and taxes exclusively in integer cents (`cents = price * qty`).
-2. **Pessimistic Inventory Locking**: Stock reservations execute conditional decrements (`WHERE stock >= requested_qty`) with 15-minute expiration timestamps, eliminating race conditions during flash sales.
-3. **Idempotent Webhook Reconciliation**: Stripe webhook dispatches are validated against HMAC-SHA256 signatures via raw body payloads and recorded in a `processed_events` ledger to guarantee exactly-once order transitions.
+1. **Zero-Trust Financial Recomputation**: The client surface never passes authoritative monetary amounts to the database. The server re-queries product unit prices and recalculates subtotals, discounts, and taxes exclusively in integer paise (`paise = unitPricePaise * qty`).
+2. **Pessimistic Inventory Locking**: Stock reservations execute conditional decrements (`WHERE stock >= requested_qty`) inside serialized transactions with immediate rollback on race conditions, eliminating overselling during flash sales.
+3. **Idempotent Transaction & UTR Reconciliation**: Payment submissions require unique 12-digit UTR references validated against NPCI standards, deduplicated via unique database constraints against existing orders to prevent replay submissions, and verified against administrative credit ledgers.
 4. **Dual Authentication Gatekeeper**: Isolates customer storefront identity (`sc_session`) from back-office administrative access (`sc_admin`) with role-based routing at the edge middleware level.
 
 ---

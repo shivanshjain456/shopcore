@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1240" height="920" viewBox="0 0 1240 920" content="&lt;mxfile host=&quot;app.diagrams.net&quot; modified=&quot;2026-10-03T02:00:00.000Z&quot; agent=&quot;Mozilla/5.0&quot; version=&quot;24.0.0&quot; type=&quot;embed&quot;&gt;
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1240" height="920" viewBox="0 0 1240 920" content="&lt;mxfile host=&quot;app.diagrams.net&quot; modified=&quot;2026-10-03T07:30:00.000Z&quot; agent=&quot;Mozilla/5.0&quot; version=&quot;24.0.0&quot; type=&quot;embed&quot;&gt;
   &lt;diagram id=&quot;shopcore-system&quot; name=&quot;ShopCore System Architecture&quot;&gt;
     &lt;mxGraphModel dx=&quot;1400&quot; dy=&quot;900&quot; grid=&quot;1&quot; gridSize=&quot;10&quot; guides=&quot;1&quot; tooltips=&quot;1&quot; connect=&quot;1&quot; arrows=&quot;1&quot; fold=&quot;1&quot; page=&quot;1&quot; pageScale=&quot;1&quot; pageWidth=&quot;1240&quot; pageHeight=&quot;920&quot; math=&quot;0&quot; shadow=&quot;0&quot;&gt;
       &lt;root&gt;
@@ -7,7 +7,7 @@
         &lt;mxCell id=&quot;1&quot; parent=&quot;0&quot; /&gt;
         
         &lt;!-- Header --&gt;
-        &lt;mxCell id=&quot;header&quot; value=&quot;&amp;lt;b&amp;gt;ShopCore — System Architecture &amp;amp;amp; Trust Boundaries&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;C4 Container &amp;amp;amp; Component Model • Strict Integer-Money Math • Atomic Stock Locks • Idempotent Stripe Webhooks&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=none;fontColor=#FFFFFF;align=left;spacingLeft=20;fontSize=14;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;header&quot; value=&quot;&amp;lt;b&amp;gt;ShopCore — System Architecture &amp;amp;amp; Trust Boundaries&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;C4 Container &amp;amp;amp; Component Model • Strict Integer Paise Math • Atomic Stock Locks • Direct UPI &amp;amp;amp; Banking Settlement Rails&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=none;fontColor=#FFFFFF;align=left;spacingLeft=20;fontSize=14;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;40&quot; y=&quot;30&quot; width=&quot;1160&quot; height=&quot;70&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
         
@@ -29,41 +29,41 @@
         &lt;mxCell id=&quot;app-boundary&quot; value=&quot;APPLICATION SERVER BOUNDARY: NEXT.JS 14 APP ROUTER (NODE.JS RUNTIME)&quot; style=&quot;swimlane;whiteSpace=wrap;html=1;strokeColor=#8B5CF6;strokeWidth=2;fillColor=#FFFFFF;fontColor=#6D28D9;fontSize=12;startSize=30;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;40&quot; y=&quot;280&quot; width=&quot;820&quot; height=&quot;420&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;middleware&quot; value=&quot;&amp;lt;b&amp;gt;Edge Middleware &amp;amp;amp; Guard&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• HTTP-only JWT verification&amp;lt;br&amp;gt;• RBAC role validation (/admin)&amp;lt;br&amp;gt;• Route-level rate limiting&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
+        &lt;mxCell id=&quot;middleware&quot; value=&quot;&amp;lt;b&amp;gt;Edge Middleware &amp;amp;amp; Guard&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• HTTP-only session verification (sc_session / sc_admin)&amp;lt;br&amp;gt;• RBAC role validation (/admin)&amp;lt;br&amp;gt;• Route-level rate limiting&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;24&quot; y=&quot;48&quot; width=&quot;240&quot; height=&quot;85&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;api-routes&quot; value=&quot;&amp;lt;b&amp;gt;API Routes &amp;amp;amp; Actions&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• /api/checkout (Order init)&amp;lt;br&amp;gt;• /api/webhooks/stripe&amp;lt;br&amp;gt;• /api/inventory/reserve&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
+        &lt;mxCell id=&quot;api-routes&quot; value=&quot;&amp;lt;b&amp;gt;API Routes &amp;amp;amp; Actions&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• /api/checkout/place-order&amp;lt;br&amp;gt;• /api/checkout/express&amp;lt;br&amp;gt;• /api/orders/[id] (Masked UTR)&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;288&quot; y=&quot;48&quot; width=&quot;240&quot; height=&quot;85&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;idempotency&quot; value=&quot;&amp;lt;b&amp;gt;Idempotency Coordinator&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Idempotency-Key header hash&amp;lt;br&amp;gt;• In-flight lock &amp;amp;amp; replay guard&amp;lt;br&amp;gt;• Prevents double-charging&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
+        &lt;mxCell id=&quot;idempotency&quot; value=&quot;&amp;lt;b&amp;gt;Idempotency Coordinator&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Idempotency-Key header SHA-256&amp;lt;br&amp;gt;• In-flight lock &amp;amp;amp; replay guard&amp;lt;br&amp;gt;• Prevents double-submission&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;552&quot; y=&quot;48&quot; width=&quot;244&quot; height=&quot;85&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
         
-        &lt;mxCell id=&quot;pricing-engine&quot; value=&quot;&amp;lt;b&amp;gt;Zero-Trust Pricing Engine&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• All math in integer cents&amp;lt;br&amp;gt;• Recomputes all totals from DB&amp;lt;br&amp;gt;• Coupon discount validation&amp;lt;br&amp;gt;• Tax &amp;amp;amp; shipping calculation&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
+        &lt;mxCell id=&quot;pricing-engine&quot; value=&quot;&amp;lt;b&amp;gt;Zero-Trust Pricing Engine&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• All math in integer paise (INR)&amp;lt;br&amp;gt;• Recomputes all totals from DB&amp;lt;br&amp;gt;• Coupon discount &amp;amp;amp; loyalty check&amp;lt;br&amp;gt;• GST tax &amp;amp;amp; shipping calculation&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;24&quot; y=&quot;168&quot; width=&quot;240&quot; height=&quot;110&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;inventory-lock&quot; value=&quot;&amp;lt;b&amp;gt;Inventory Reservation Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Atomic conditional decrement&amp;lt;br&amp;gt;• WHERE stock &amp;amp;gt;= requested_qty&amp;lt;br&amp;gt;• 15-minute lock expiration TTL&amp;lt;br&amp;gt;• Race-condition safe&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
+        &lt;mxCell id=&quot;inventory-lock&quot; value=&quot;&amp;lt;b&amp;gt;Inventory Reservation Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Atomic conditional decrement&amp;lt;br&amp;gt;• WHERE stock &amp;amp;gt;= requested_qty&amp;lt;br&amp;gt;• Interactive Prisma $transaction&amp;lt;br&amp;gt;• Race-condition safe&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;288&quot; y=&quot;168&quot; width=&quot;240&quot; height=&quot;110&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;order-fsm&quot; value=&quot;&amp;lt;b&amp;gt;Order State Machine&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• PENDING -&amp;amp;gt; RESERVED&amp;lt;br&amp;gt;• RESERVED -&amp;amp;gt; PAID (Webhook)&amp;lt;br&amp;gt;• PAID -&amp;amp;gt; PROCESSING -&amp;amp;gt; SHIPPED&amp;lt;br&amp;gt;• Immutable event transitions&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
+        &lt;mxCell id=&quot;order-fsm&quot; value=&quot;&amp;lt;b&amp;gt;Order State Machine&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• PENDING_PAYMENT_REVIEW&amp;lt;br&amp;gt;• AWAITING_VERIFICATION&amp;lt;br&amp;gt;• CONFIRMED (UTR Match)&amp;lt;br&amp;gt;• PROCESSING -&amp;amp;gt; SHIPPED&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;align=left;spacingLeft=10;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;552&quot; y=&quot;168&quot; width=&quot;244&quot; height=&quot;110&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
         
-        &lt;mxCell id=&quot;audit-subsystem&quot; value=&quot;&amp;lt;b&amp;gt;Stripe Webhook Reconciliation &amp;amp;amp; Audit Trail Subsystem&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• HMAC-SHA256 signature verification via raw request buffer (STRIPE_WEBHOOK_SECRET)&amp;lt;br&amp;gt;• Event deduplication via processed_events table: guarantees exact-once execution&amp;lt;br&amp;gt;• Audit trail logging: records actor, IP, timestamp, price delta, and inventory mutations&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;fontColor=#1E293B;fontSize=11;align=left;spacingLeft=12;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
+        &lt;mxCell id=&quot;audit-subsystem&quot; value=&quot;&amp;lt;b&amp;gt;Payment Reconciliation &amp;amp;amp; Audit Trail Subsystem&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• NPCI 12-digit UTR validation (UPI/IMPS) &amp;amp;amp; anti-fraud pattern verification&amp;lt;br&amp;gt;• Anti-replay deduplication via unique utrNormalized constraint: guarantees exactly-once submission&amp;lt;br&amp;gt;• Administrative audit ledger: verified credit matching against bank statement&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;fontColor=#1E293B;fontSize=11;align=left;spacingLeft=12;&quot; vertex=&quot;1&quot; parent=&quot;app-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;24&quot; y=&quot;312&quot; width=&quot;772&quot; height=&quot;88&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
 
         &lt;!-- External Boundary --&gt;
-        &lt;mxCell id=&quot;ext-boundary&quot; value=&quot;EXTERNAL THIRD-PARTY APIS&quot; style=&quot;swimlane;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;strokeColor=#F43F5E;fillColor=#FFF1F2;fontColor=#E11D48;fontSize=11;startSize=26;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;ext-boundary&quot; value=&quot;EXTERNAL PAYMENT RAILS &amp;amp;amp; SERVICES&quot; style=&quot;swimlane;whiteSpace=wrap;html=1;dashed=1;dashPattern=6 4;strokeColor=#F43F5E;fillColor=#FFF1F2;fontColor=#E11D48;fontSize=11;startSize=26;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;885&quot; y=&quot;280&quot; width=&quot;315&quot; height=&quot;420&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;stripe-ext&quot; value=&quot;&amp;lt;b&amp;gt;Stripe Payment Gateway&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Hosted Checkout Sessions&amp;lt;br&amp;gt;• PaymentIntent lifecycle&amp;lt;br&amp;gt;• Webhook dispatch (event bus)&amp;lt;br&amp;gt;&amp;lt;font color=&amp;quot;#FB7185&amp;quot;&amp;gt;PCI-DSS delegated scope&amp;lt;/font&amp;gt;&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;ext-boundary&quot;&gt;
+        &lt;mxCell id=&quot;upi-ext&quot; value=&quot;&amp;lt;b&amp;gt;UPI &amp;amp;amp; Banking Rails&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Dynamic UPI QR generation&amp;lt;br&amp;gt;• NPCI retail rails (UPI/IMPS/NEFT)&amp;lt;br&amp;gt;• Customer bank app payment&amp;lt;br&amp;gt;&amp;lt;font color=&amp;quot;#FB7185&amp;quot;&amp;gt;Zero-cost direct settlement&amp;lt;/font&amp;gt;&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;ext-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;18&quot; y=&quot;48&quot; width=&quot;278&quot; height=&quot;110&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;email-ext&quot; value=&quot;&amp;lt;b&amp;gt;Transactional Email (SMTP)&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Order confirmation receipts&amp;lt;br&amp;gt;• Shipping tracking updates&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;ext-boundary&quot;&gt;
+        &lt;mxCell id=&quot;email-ext&quot; value=&quot;&amp;lt;b&amp;gt;Transactional Email (SMTP)&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Order confirmation receipts&amp;lt;br&amp;gt;• Shipping tracking updates&amp;lt;br&amp;gt;• Background task runner cron&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;ext-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;18&quot; y=&quot;178&quot; width=&quot;278&quot; height=&quot;95&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;b2b-bank-ext&quot; value=&quot;&amp;lt;b&amp;gt;B2B Bank Transfer / UTR&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Offline invoice PO matching&amp;lt;br&amp;gt;• Customer UTR receipt upload&amp;lt;br&amp;gt;• Manual admin reconciliation&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;ext-boundary&quot;&gt;
+        &lt;mxCell id=&quot;bank-ext&quot; value=&quot;&amp;lt;b&amp;gt;Admin Bank Statement Audit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;• Incoming credit verification&amp;lt;br&amp;gt;• Customer UTR receipt review&amp;lt;br&amp;gt;• Bank statement ledger matching&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;ext-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;18&quot; y=&quot;293&quot; width=&quot;278&quot; height=&quot;107&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
 
@@ -71,16 +71,16 @@
         &lt;mxCell id=&quot;db-boundary&quot; value=&quot;DATA PERSISTENCE LAYER: PRISMA ORM &amp;amp;amp; SQLITE (WAL MODE)&quot; style=&quot;swimlane;whiteSpace=wrap;html=1;strokeColor=#6366F1;strokeWidth=2;fillColor=#EEF2FF;fontColor=#3730A3;fontSize=12;startSize=28;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;40&quot; y=&quot;720&quot; width=&quot;820&quot; height=&quot;110&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;db-products&quot; value=&quot;&amp;lt;b&amp;gt;products&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;id, price_cents, stock&amp;lt;br&amp;gt;version, is_active&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
+        &lt;mxCell id=&quot;db-products&quot; value=&quot;&amp;lt;b&amp;gt;products&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;id, pricePaise, stock&amp;lt;br&amp;gt;version, is_active&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;20&quot; y=&quot;36&quot; width=&quot;180&quot; height=&quot;60&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;db-orders&quot; value=&quot;&amp;lt;b&amp;gt;orders &amp;amp;amp; items&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;id, user_id, status&amp;lt;br&amp;gt;subtotal_cents, tax_cents&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
+        &lt;mxCell id=&quot;db-orders&quot; value=&quot;&amp;lt;b&amp;gt;orders &amp;amp;amp; items&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;id, user_id, status&amp;lt;br&amp;gt;subtotalPaise, totalPaise&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;216&quot; y=&quot;36&quot; width=&quot;180&quot; height=&quot;60&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;db-reserves&quot; value=&quot;&amp;lt;b&amp;gt;inventory_reservations&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;id, product_id, qty&amp;lt;br&amp;gt;expires_at, status&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
+        &lt;mxCell id=&quot;db-reserves&quot; value=&quot;&amp;lt;b&amp;gt;utr_submissions&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;id, utrNormalized (UNIQUE)&amp;lt;br&amp;gt;status, amountPaise&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;412&quot; y=&quot;36&quot; width=&quot;190&quot; height=&quot;60&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;db-audit&quot; value=&quot;&amp;lt;b&amp;gt;idempotency &amp;amp;amp; audit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;key_hash, response_json&amp;lt;br&amp;gt;processed_events, logs&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
+        &lt;mxCell id=&quot;db-audit&quot; value=&quot;&amp;lt;b&amp;gt;idempotency &amp;amp;amp; audit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;key_hash, response_json&amp;lt;br&amp;gt;audit_logs, status_history&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;fontSize=10;&quot; vertex=&quot;1&quot; parent=&quot;db-boundary&quot;&gt;
           &lt;mxGeometry x=&quot;618&quot; y=&quot;36&quot; width=&quot;182&quot; height=&quot;60&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
 
@@ -88,7 +88,7 @@
         &lt;mxCell id=&quot;edge1&quot; style=&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=2;&quot; edge=&quot;1&quot; parent=&quot;1&quot; source=&quot;b2c-client&quot; target=&quot;api-routes&quot;&gt;
           &lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;edge2&quot; style=&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#F43F5E;strokeWidth=2;&quot; edge=&quot;1&quot; parent=&quot;1&quot; source=&quot;api-routes&quot; target=&quot;stripe-ext&quot;&gt;
+        &lt;mxCell id=&quot;edge2&quot; style=&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#F43F5E;strokeWidth=2;&quot; edge=&quot;1&quot; parent=&quot;1&quot; source=&quot;api-routes&quot; target=&quot;upi-ext&quot;&gt;
           &lt;mxGeometry relative=&quot;1&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
         &lt;mxCell id=&quot;edge3&quot; style=&quot;edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#4F46E5;strokeWidth=2;&quot; edge=&quot;1&quot; parent=&quot;1&quot; source=&quot;inventory-lock&quot; target=&quot;db-reserves&quot;&gt;
@@ -136,12 +136,11 @@
   <!-- Clean Canvas Background -->
   <rect width="100%" height="100%" fill="#F8FAFC" rx="12" stroke="#CBD5E1" stroke-width="1.5" />
   
-  
   <!-- Header Banner -->
   <g transform="translate(40, 30)">
     <rect x="0" y="0" width="1160" height="70" rx="8" fill="#0F172A" />
     <text x="24" y="32" font-size="20" font-weight="700" fill="#FFFFFF">ShopCore — System Architecture &amp; Trust Boundaries</text>
-    <text x="24" y="54" font-size="12" font-weight="400" fill="#94A3B8">C4 Container &amp; Component Model • Strict Integer-Money Math (cents) • Atomic Stock Locks • Idempotent Stripe Webhooks</text>
+    <text x="24" y="54" font-size="12" font-weight="400" fill="#94A3B8">C4 Container &amp; Component Model • Strict Integer Paise Math • Atomic Stock Locks • Direct UPI &amp; Banking Settlement Rails</text>
     <rect x="940" y="22" width="195" height="26" rx="13" fill="#1E293B" stroke="#334155" stroke-width="1"/>
     <text x="1037" y="39" font-size="11" font-weight="600" fill="#38BDF8" text-anchor="middle">Next.js 14 • Prisma • SQLite WAL</text>
   </g>
@@ -196,7 +195,7 @@
     <g transform="translate(24, 48)">
       <rect x="0" y="0" width="240" height="85" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5" />
       <text x="12" y="22" font-size="13" font-weight="600" fill="#4C1D95">Edge Middleware &amp; Guard</text>
-      <text x="12" y="40" font-size="11" fill="#6D28D9">• HTTP-only JWT verification</text>
+      <text x="12" y="40" font-size="11" fill="#6D28D9">• HTTP-only session tokens</text>
       <text x="12" y="56" font-size="11" fill="#6D28D9">• RBAC role validation (/admin)</text>
       <text x="12" y="72" font-size="11" fill="#6D28D9">• Route-level rate limiting</text>
     </g>
@@ -205,18 +204,18 @@
     <g transform="translate(288, 48)">
       <rect x="0" y="0" width="240" height="85" rx="6" fill="#F5F3FF" stroke="#8B5CF6" stroke-width="1.5" />
       <text x="12" y="22" font-size="13" font-weight="600" fill="#4C1D95">API Routes &amp; Actions</text>
-      <text x="12" y="40" font-size="11" fill="#6D28D9">• /api/checkout (Order init)</text>
-      <text x="12" y="56" font-size="11" fill="#6D28D9">• /api/webhooks/stripe</text>
-      <text x="12" y="72" font-size="11" fill="#6D28D9">• /api/inventory/reserve</text>
+      <text x="12" y="40" font-size="11" fill="#6D28D9">• /api/checkout/place-order</text>
+      <text x="12" y="56" font-size="11" fill="#6D28D9">• /api/checkout/express</text>
+      <text x="12" y="72" font-size="11" fill="#6D28D9">• /api/orders/[id] (Masked UTR)</text>
     </g>
 
     <!-- Idempotency Coordinator -->
     <g transform="translate(552, 48)">
       <rect x="0" y="0" width="244" height="85" rx="6" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5" />
       <text x="12" y="22" font-size="13" font-weight="600" fill="#78350F">Idempotency Coordinator</text>
-      <text x="12" y="40" font-size="11" fill="#B45309">• Idempotency-Key header hash</text>
+      <text x="12" y="40" font-size="11" fill="#B45309">• Idempotency-Key SHA-256 hash</text>
       <text x="12" y="56" font-size="11" fill="#B45309">• In-flight lock &amp; replay guard</text>
-      <text x="12" y="72" font-size="11" fill="#B45309">• Prevents double-charging</text>
+      <text x="12" y="72" font-size="11" fill="#B45309">• Prevents double-submission</text>
     </g>
 
     <!-- Flow arrow down -->
@@ -226,10 +225,10 @@
     <g transform="translate(24, 168)">
       <rect x="0" y="0" width="240" height="110" rx="6" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5" />
       <text x="12" y="22" font-size="13" font-weight="600" fill="#064E3B">Zero-Trust Pricing Engine</text>
-      <text x="12" y="40" font-size="11" fill="#047857">• All math in integer cents</text>
+      <text x="12" y="40" font-size="11" fill="#047857">• All math in integer paise (INR)</text>
       <text x="12" y="56" font-size="11" fill="#047857">• Recomputes all totals from DB</text>
-      <text x="12" y="72" font-size="11" fill="#047857">• Validates coupon codes</text>
-      <text x="12" y="88" font-size="11" fill="#047857">• Tax &amp; shipping calculation</text>
+      <text x="12" y="72" font-size="11" fill="#047857">• Coupon &amp; loyalty valuation</text>
+      <text x="12" y="88" font-size="11" fill="#047857">• GST tax &amp; shipping calculation</text>
       <text x="12" y="104" font-size="10" font-weight="600" fill="#059669">Never trusts client price payload</text>
     </g>
 
@@ -239,19 +238,19 @@
       <text x="12" y="22" font-size="13" font-weight="600" fill="#064E3B">Inventory Reservation Lock</text>
       <text x="12" y="40" font-size="11" fill="#047857">• Atomic conditional decrement</text>
       <text x="12" y="56" font-size="11" fill="#047857">• WHERE stock &gt;= requested_qty</text>
-      <text x="12" y="72" font-size="11" fill="#047857">• 15-minute lock expiration TTL</text>
-      <text x="12" y="88" font-size="11" fill="#047857">• Automatic rollback on failure</text>
-      <text x="12" y="104" font-size="10" font-weight="600" fill="#059669">Race-condition safe</text>
+      <text x="12" y="72" font-size="11" fill="#047857">• Interactive Prisma $transaction</text>
+      <text x="12" y="88" font-size="11" fill="#047857">• Immediate rollback on race failure</text>
+      <text x="12" y="104" font-size="10" font-weight="600" fill="#059669">Zero overselling guarantee</text>
     </g>
 
     <!-- Order State Machine -->
     <g transform="translate(552, 168)">
       <rect x="0" y="0" width="244" height="110" rx="6" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5" />
       <text x="12" y="22" font-size="13" font-weight="600" fill="#064E3B">Order State Machine</text>
-      <text x="12" y="40" font-size="11" fill="#047857">• PENDING -&gt; RESERVED</text>
-      <text x="12" y="56" font-size="11" fill="#047857">• RESERVED -&gt; PAID (Webhook)</text>
-      <text x="12" y="72" font-size="11" fill="#047857">• PAID -&gt; PROCESSING -&gt; SHIPPED</text>
-      <text x="12" y="88" font-size="11" fill="#047857">• CANCELLED / REFUNDED</text>
+      <text x="12" y="40" font-size="11" fill="#047857">• PENDING_PAYMENT_REVIEW</text>
+      <text x="12" y="56" font-size="11" fill="#047857">• AWAITING_VERIFICATION</text>
+      <text x="12" y="72" font-size="11" fill="#047857">• CONFIRMED (UTR Match)</text>
+      <text x="12" y="88" font-size="11" fill="#047857">• PROCESSING -&gt; SHIPPED</text>
       <text x="12" y="104" font-size="10" font-weight="600" fill="#059669">Immutable event transitions</text>
     </g>
 
@@ -261,26 +260,26 @@
     <!-- Webhook Reconciliation & Audit Log -->
     <g transform="translate(24, 312)">
       <rect x="0" y="0" width="772" height="88" rx="6" fill="#F8FAFC" stroke="#64748B" stroke-width="1.5" />
-      <text x="16" y="24" font-size="13" font-weight="600" fill="#1E293B">Stripe Webhook Reconciliation &amp; Audit Trail Subsystem</text>
-      <text x="16" y="44" font-size="11" fill="#475569">• HMAC-SHA256 signature verification via raw request buffer (STRIPE_WEBHOOK_SECRET)</text>
-      <text x="16" y="60" font-size="11" fill="#475569">• Event deduplication via processed_events table: guarantees exact-once execution</text>
-      <text x="16" y="76" font-size="11" fill="#475569">• Audit trail logging: records actor, IP, timestamp, price delta, and inventory mutations</text>
+      <text x="16" y="24" font-size="13" font-weight="600" fill="#1E293B">Payment Reconciliation &amp; Audit Trail Subsystem</text>
+      <text x="16" y="44" font-size="11" fill="#475569">• NPCI 12-digit UTR validation (UPI/IMPS) &amp; anti-fraud pattern verification</text>
+      <text x="16" y="60" font-size="11" fill="#475569">• Deduplication via unique utrNormalized constraint: guarantees exactly-once submission</text>
+      <text x="16" y="76" font-size="11" fill="#475569">• Administrative audit ledger: verified credit matching against bank statement</text>
     </g>
   </g>
 
   <!-- 3. External Third-Party Boundary (Right) -->
   <g transform="translate(885, 280)">
     <rect x="0" y="0" width="315" height="420" rx="8" fill="#FFF1F2" stroke="#F43F5E" stroke-width="1.5" stroke-dasharray="6,4" />
-    <text x="16" y="22" font-size="11" font-weight="700" fill="#E11D48" letter-spacing="1">EXTERNAL THIRD-PARTY APIS</text>
+    <text x="16" y="22" font-size="11" font-weight="700" fill="#E11D48" letter-spacing="1">EXTERNAL PAYMENT RAILS &amp; SERVICES</text>
 
-    <!-- Stripe -->
+    <!-- UPI & Banking Rails -->
     <g transform="translate(18, 48)">
       <rect x="0" y="0" width="278" height="110" rx="6" fill="#FFFFFF" stroke="#F43F5E" stroke-width="1.5" filter="url(#shadow)" />
-      <text x="14" y="24" font-size="14" font-weight="600" fill="#9F1239">Stripe Payment Gateway</text>
-      <text x="14" y="44" font-size="11" fill="#BE123C">• Hosted Checkout Sessions</text>
-      <text x="14" y="60" font-size="11" fill="#BE123C">• PaymentIntent lifecycle</text>
-      <text x="14" y="76" font-size="11" fill="#BE123C">• Webhook dispatch (event bus)</text>
-      <text x="14" y="94" font-size="10" font-weight="500" fill="#FB7185">PCI-DSS compliant delegated scope</text>
+      <text x="14" y="24" font-size="14" font-weight="600" fill="#9F1239">UPI &amp; Banking Rails</text>
+      <text x="14" y="44" font-size="11" fill="#BE123C">• Dynamic UPI QR generation</text>
+      <text x="14" y="60" font-size="11" fill="#BE123C">• NPCI retail rails (UPI/IMPS/NEFT)</text>
+      <text x="14" y="76" font-size="11" fill="#BE123C">• Customer bank app payment</text>
+      <text x="14" y="94" font-size="10" font-weight="500" fill="#FB7185">Zero-cost direct settlement</text>
     </g>
 
     <!-- Email Notification -->
@@ -295,15 +294,15 @@
     <!-- Offline Bank Verification -->
     <g transform="translate(18, 293)">
       <rect x="0" y="0" width="278" height="107" rx="6" fill="#FFFFFF" stroke="#F43F5E" stroke-width="1.5" filter="url(#shadow)" />
-      <text x="14" y="24" font-size="14" font-weight="600" fill="#9F1239">B2B Bank Transfer / UTR Flow</text>
-      <text x="14" y="44" font-size="11" fill="#BE123C">• Offline invoice PO matching</text>
-      <text x="14" y="60" font-size="11" fill="#BE123C">• Customer UTR receipt upload</text>
-      <text x="14" y="76" font-size="11" fill="#BE123C">• Manual admin reconciliation</text>
-      <text x="14" y="94" font-size="10" font-weight="500" fill="#FB7185">Enterprise B2B payment path</text>
+      <text x="14" y="24" font-size="14" font-weight="600" fill="#9F1239">Admin Bank Statement Audit</text>
+      <text x="14" y="44" font-size="11" fill="#BE123C">• Incoming credit verification</text>
+      <text x="14" y="60" font-size="11" fill="#BE123C">• Customer UTR receipt review</text>
+      <text x="14" y="76" font-size="11" fill="#BE123C">• Bank statement ledger matching</text>
+      <text x="14" y="94" font-size="10" font-weight="500" fill="#FB7185">Complete financial audit trail</text>
     </g>
   </g>
 
-  <!-- Connectors: Server <-> Stripe -->
+  <!-- Connectors: Server <-> Payment Rails -->
   <path d="M 860 380 L 885 380" stroke="#F43F5E" stroke-width="2" marker-end="url(#arrow)" fill="none" />
   <path d="M 885 410 L 860 410" stroke="#F43F5E" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrow)" fill="none" />
 
@@ -316,7 +315,7 @@
     <g transform="translate(20, 36)">
       <rect x="0" y="0" width="180" height="60" rx="5" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.2" />
       <text x="10" y="20" font-size="12" font-weight="600" fill="#1E1B4B">products</text>
-      <text x="10" y="36" font-size="10" fill="#4F46E5">id, price_cents, stock</text>
+      <text x="10" y="36" font-size="10" fill="#4F46E5">id, pricePaise, stock</text>
       <text x="10" y="50" font-size="10" fill="#4F46E5">version, is_active</text>
     </g>
 
@@ -325,15 +324,15 @@
       <rect x="0" y="0" width="180" height="60" rx="5" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.2" />
       <text x="10" y="20" font-size="12" font-weight="600" fill="#1E1B4B">orders &amp; order_items</text>
       <text x="10" y="36" font-size="10" fill="#4F46E5">id, user_id, status</text>
-      <text x="10" y="50" font-size="10" fill="#4F46E5">subtotal_cents, tax_cents</text>
+      <text x="10" y="50" font-size="10" fill="#4F46E5">subtotalPaise, totalPaise</text>
     </g>
 
     <!-- Inventory Reservations -->
     <g transform="translate(412, 36)">
       <rect x="0" y="0" width="190" height="60" rx="5" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.2" />
-      <text x="10" y="20" font-size="12" font-weight="600" fill="#1E1B4B">inventory_reservations</text>
-      <text x="10" y="36" font-size="10" fill="#4F46E5">id, product_id, qty</text>
-      <text x="10" y="50" font-size="10" fill="#4F46E5">expires_at, status</text>
+      <text x="10" y="20" font-size="12" font-weight="600" fill="#1E1B4B">utr_submissions</text>
+      <text x="10" y="36" font-size="10" fill="#4F46E5">id, utrNormalized (UNIQUE)</text>
+      <text x="10" y="50" font-size="10" fill="#4F46E5">status, amountPaise</text>
     </g>
 
     <!-- Idempotency & Audit -->
@@ -341,7 +340,7 @@
       <rect x="0" y="0" width="182" height="60" rx="5" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.2" />
       <text x="10" y="20" font-size="12" font-weight="600" fill="#1E1B4B">idempotency &amp; audit</text>
       <text x="10" y="36" font-size="10" fill="#4F46E5">key_hash, response_json</text>
-      <text x="10" y="50" font-size="10" fill="#4F46E5">processed_events, logs</text>
+      <text x="10" y="50" font-size="10" fill="#4F46E5">audit_logs, status_history</text>
     </g>
   </g>
 
@@ -367,10 +366,10 @@
     <text x="602" y="28" font-size="11" fill="#334155">Database (SQLite WAL)</text>
 
     <rect x="760" y="16" width="14" height="14" rx="3" fill="#FFF1F2" stroke="#F43F5E" stroke-width="1.5"/>
-    <text x="782" y="28" font-size="11" fill="#334155">External Systems</text>
+    <text x="782" y="28" font-size="11" fill="#334155">External Payment Rails</text>
 
-    <line x1="910" y1="23" x2="940" y2="23" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4,3"/>
-    <text x="948" y="28" font-size="11" fill="#334155">Trust / Security Boundary</text>
+    <line x1="930" y1="23" x2="960" y2="23" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4,3"/>
+    <text x="968" y="28" font-size="11" fill="#334155">Trust / Security Boundary</text>
   </g>
 
 </svg>

@@ -86,11 +86,16 @@ async function startServer() {
   serverProc = spawn('npx', ['next', 'start', '-p', String(PORT)], {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, NODE_ENV: 'development', SHOPCORE_ALLOW_TEST_EMAILS: '1', SHOPCORE_DISABLE_RATE_LIMITS: '1' },
-    detached: true,
+    detached: process.platform !== 'win32',
+    shell: true,
   });
   const killGroup = () => {
     if (serverProc && serverProc.pid && !serverProc.killed) {
-      try { process.kill(-serverProc.pid, 'SIGKILL'); } catch { /* */ }
+      if (process.platform === 'win32') {
+        try { serverProc.kill(); } catch { /* */ }
+      } else {
+        try { process.kill(-serverProc.pid, 'SIGKILL'); } catch { /* */ }
+      }
     }
   };
   process.on('exit', killGroup);
@@ -206,7 +211,7 @@ async function makeUser(label: string): Promise<TestUser> {
 let testProductId = '';
 let testVariantInStock = '';
 let testVariantLowStock = '';
-let testVariantPriceCents = 0;
+let testVariantPricePaise = 0;
 let testProductSku = '';
 async function setupCatalog() {
   // Create our own test product so other suites' products aren't affected.
@@ -234,7 +239,7 @@ async function setupCatalog() {
   testProductSku = baseSku;
   testVariantInStock = p.variants[0].id;
   testVariantLowStock = p.variants[1].id;
-  testVariantPriceCents = p.variants[0].pricePaise;
+  testVariantPricePaise = p.variants[0].pricePaise;
 }
 
 // ─────────────────────────────────────────────── UNIT
@@ -297,8 +302,8 @@ async function unitTests() {
     ctx: priceCtxForUser(dbUser, null),
   });
   eq('view: 1 item',              1, view.items.length);
-  eq('view: unit price = DB price', testVariantPriceCents, view.items[0].unitPricePaise);
-  eq('view: lineTotal = unit*qty', testVariantPriceCents * 3, view.items[0].lineTotalPaise);
+  eq('view: unit price = DB price', testVariantPricePaise, view.items[0].unitPricePaise);
+  eq('view: lineTotal = unit*qty', testVariantPricePaise * 3, view.items[0].lineTotalPaise);
 
   // pruneExpiredExpressCheckouts removes only stale rows
   const oldRow = await prisma.expressCheckout.create({
@@ -601,7 +606,7 @@ async function integrationTests() {
     method: 'POST', json: { productId: testProductId, variantId: testVariantInStock, quantity: 1 },
   });
   // Bump the variant price by 1000 paise
-  const newPrice = testVariantPriceCents + 1000;
+  const newPrice = testVariantPricePaise + 1000;
   await prisma.variant.update({ where: { id: testVariantInStock }, data: { pricePaise: newPrice } });
   const receiptUrl5 = await uploadReceipt(bob.jar);
   const r15 = await placeOrderHttp(bob.jar, {
@@ -617,7 +622,7 @@ async function integrationTests() {
   eq('(xv) order line price = NEW (server-side, not stale)',
      newPrice, order2.items[0].unitPricePaise);
   // Restore
-  await prisma.variant.update({ where: { id: testVariantInStock }, data: { pricePaise: testVariantPriceCents } });
+  await prisma.variant.update({ where: { id: testVariantInStock }, data: { pricePaise: testVariantPricePaise } });
 
   // (xvi) — DELETE /express clears the row + cookie
   await api(bob.jar, '/api/checkout/express', {

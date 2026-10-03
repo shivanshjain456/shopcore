@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1140" height="820" viewBox="0 0 1140 820" content="&lt;mxfile host=&quot;app.diagrams.net&quot; modified=&quot;2026-10-03T02:00:00.000Z&quot; agent=&quot;Mozilla/5.0&quot; version=&quot;24.0.0&quot; type=&quot;embed&quot;&gt;
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1140" height="820" viewBox="0 0 1140 820" content="&lt;mxfile host=&quot;app.diagrams.net&quot; modified=&quot;2026-10-03T07:30:00.000Z&quot; agent=&quot;Mozilla/5.0&quot; version=&quot;24.0.0&quot; type=&quot;embed&quot;&gt;
   &lt;diagram id=&quot;shopcore-flows&quot; name=&quot;ShopCore Checkout Flow&quot;&gt;
     &lt;mxGraphModel dx=&quot;1200&quot; dy=&quot;800&quot; grid=&quot;1&quot; gridSize=&quot;10&quot; guides=&quot;1&quot; tooltips=&quot;1&quot; connect=&quot;1&quot; arrows=&quot;1&quot; fold=&quot;1&quot; page=&quot;1&quot; pageScale=&quot;1&quot; pageWidth=&quot;1140&quot; pageHeight=&quot;820&quot; math=&quot;0&quot; shadow=&quot;0&quot;&gt;
       &lt;root&gt;
         &lt;mxCell id=&quot;0&quot; /&gt;
         &lt;mxCell id=&quot;1&quot; parent=&quot;0&quot; /&gt;
         
-        &lt;mxCell id=&quot;flow-header&quot; value=&quot;&amp;lt;b&amp;gt;ShopCore — Transactional Checkout &amp;amp;amp; Inventory Locking Flow&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;End-to-End Sequence • Zero-Trust Price Recomputation • Pessimistic Inventory Lock • Webhook Reconciliation&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;fontColor=#FFFFFF;align=left;spacingLeft=20;fontSize=13;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;flow-header&quot; value=&quot;&amp;lt;b&amp;gt;ShopCore — Transactional Checkout &amp;amp;amp; Inventory Locking Flow&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;End-to-End Sequence • Zero-Trust Price Recomputation • Pessimistic Inventory Lock • UPI UTR Reconciliation&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;fontColor=#FFFFFF;align=left;spacingLeft=20;fontSize=13;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;40&quot; y=&quot;30&quot; width=&quot;1060&quot; height=&quot;70&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
         
-        &lt;mxCell id=&quot;step1&quot; value=&quot;&amp;lt;b&amp;gt;1. Submit Cart &amp;amp;amp; Key&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Client sends cart items + Idempotency-Key&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step1&quot; value=&quot;&amp;lt;b&amp;gt;1. Submit Cart &amp;amp;amp; Key&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Client sends cart/express + Idempotency-Key + UTR &amp;amp;amp; receipt&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;40&quot; y=&quot;125&quot; width=&quot;230&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step2&quot; value=&quot;&amp;lt;b&amp;gt;2. Auth &amp;amp;amp; Rate Limit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Verify session JWT, check rate limit&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step2&quot; value=&quot;&amp;lt;b&amp;gt;2. Auth &amp;amp;amp; Rate Limit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Verify session cookie, check rate limit&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;315&quot; y=&quot;125&quot; width=&quot;230&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step3&quot; value=&quot;&amp;lt;b&amp;gt;3. Price Recomputation&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Recalculate all totals in integer cents from DB&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step3&quot; value=&quot;&amp;lt;b&amp;gt;3. Price Recomputation&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Recalculate all totals in integer paise from DB&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;590&quot; y=&quot;125&quot; width=&quot;230&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step4&quot; value=&quot;&amp;lt;b&amp;gt;4. Idempotency Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Hash key, return cached or acquire lock&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step4&quot; value=&quot;&amp;lt;b&amp;gt;4. Idempotency Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;SHA-256 hash key, return cached or acquire lock&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;865&quot; y=&quot;125&quot; width=&quot;235&quot; height=&quot;100&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step5&quot; value=&quot;&amp;lt;b&amp;gt;5. Atomic Stock Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;WHERE stock &amp;amp;gt;= qty (15-min TTL)&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step5&quot; value=&quot;&amp;lt;b&amp;gt;5. Atomic Stock Lock&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;UPDATE product SET stock = stock - q WHERE stock &amp;amp;gt;= q&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;865&quot; y=&quot;285&quot; width=&quot;235&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step6&quot; value=&quot;&amp;lt;b&amp;gt;6. Stripe Session&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Create Stripe hosted checkout session&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1F2;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step6&quot; value=&quot;&amp;lt;b&amp;gt;6. UTR Format Check&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Validate 12-digit NPCI RRN format &amp;amp;amp; anti-fraud patterns&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1F2;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;590&quot; y=&quot;285&quot; width=&quot;230&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step7&quot; value=&quot;&amp;lt;b&amp;gt;7. Pending Order&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Status PENDING, commit DB transaction&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#6366F1;fontColor=#1E1B4B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step7&quot; value=&quot;&amp;lt;b&amp;gt;7. Claim UTR Anti-Replay&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;INSERT INTO utr_submissions (utrNormalized UNIQUE)&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#6366F1;fontColor=#1E1B4B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;315&quot; y=&quot;285&quot; width=&quot;230&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step8&quot; value=&quot;&amp;lt;b&amp;gt;8. Customer Pays&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Browser redirects to Stripe, pays&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step8&quot; value=&quot;&amp;lt;b&amp;gt;8. Create Pending Order&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Status PENDING_PAYMENT_REVIEW, commit DB transaction&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontColor=#1E3A8A;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;40&quot; y=&quot;285&quot; width=&quot;230&quot; height=&quot;105&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step9&quot; value=&quot;&amp;lt;b&amp;gt;9. Webhook Ingest&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;checkout.session.completed with HMAC&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1F2;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step9&quot; value=&quot;&amp;lt;b&amp;gt;9. Customer Receipt UI&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Returns 200 OK + orderNumber &amp;amp;amp; masked UTR&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1F2;strokeColor=#F43F5E;fontColor=#9F1239;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;40&quot; y=&quot;455&quot; width=&quot;310&quot; height=&quot;115&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step10&quot; value=&quot;&amp;lt;b&amp;gt;10. HMAC &amp;amp;amp; Dedup&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Verify sig, check processed_events table&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step10&quot; value=&quot;&amp;lt;b&amp;gt;10. Admin Statement Audit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Compares UTR &amp;amp;amp; amount against incoming bank credit&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;fontColor=#78350F;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;415&quot; y=&quot;455&quot; width=&quot;310&quot; height=&quot;115&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
-        &lt;mxCell id=&quot;step11&quot; value=&quot;&amp;lt;b&amp;gt;11. Order Commit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Status -&amp;amp;gt; PAID, reserve -&amp;amp;gt; COMMITTED&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
+        &lt;mxCell id=&quot;step11&quot; value=&quot;&amp;lt;b&amp;gt;11. Payment Verification Commit&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;Status -&amp;amp;gt; CONFIRMED, credits loyalty points, fulfills&quot; style=&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontColor=#064E3B;fontSize=11;&quot; vertex=&quot;1&quot; parent=&quot;1&quot;&gt;
           &lt;mxGeometry x=&quot;790&quot; y=&quot;455&quot; width=&quot;310&quot; height=&quot;115&quot; as=&quot;geometry&quot; /&gt;
         &lt;/mxCell&gt;
       &lt;/root&gt;
@@ -85,12 +85,11 @@
   <!-- Clean Canvas Background -->
   <rect width="100%" height="100%" fill="#F8FAFC" rx="12" stroke="#CBD5E1" stroke-width="1.5" />
   
-  
   <!-- Header Banner -->
   <g transform="translate(40, 30)">
     <rect x="0" y="0" width="1060" height="70" rx="8" fill="#0F172A" />
     <text x="24" y="32" font-size="20" font-weight="700" fill="#FFFFFF">ShopCore — Transactional Checkout &amp; Inventory Locking Flow</text>
-    <text x="24" y="54" font-size="12" font-weight="400" fill="#94A3B8">End-to-End Sequence • Zero-Trust Price Recomputation • Pessimistic Inventory Lock • Webhook Reconciliation</text>
+    <text x="24" y="54" font-size="12" font-weight="400" fill="#94A3B8">End-to-End Sequence • Zero-Trust Price Recomputation • Pessimistic Inventory Lock • UPI UTR Reconciliation</text>
     <rect x="860" y="22" width="175" height="26" rx="13" fill="#1E293B" stroke="#334155" stroke-width="1"/>
     <text x="947" y="39" font-size="11" font-weight="600" fill="#10B981" text-anchor="middle">ACID Safe Flow</text>
   </g>
@@ -101,9 +100,9 @@
     <circle cx="24" cy="24" r="12" fill="#3B82F6" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
     <text x="46" y="28" font-size="13" font-weight="600" fill="#1E3A8A">Submit Cart &amp; Key</text>
-    <text x="14" y="52" font-size="11" fill="#334155">• Client sends cart item IDs &amp; qty</text>
-    <text x="14" y="68" font-size="11" fill="#334155">• Generates Idempotency-Key</text>
-    <text x="14" y="84" font-size="10" font-weight="600" fill="#2563EB">POST /api/checkout</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Cart or Buy-Now express items</text>
+    <text x="14" y="68" font-size="11" fill="#334155">• UTR number + payment receipt</text>
+    <text x="14" y="84" font-size="10" font-weight="600" fill="#2563EB">POST /api/checkout/place-order</text>
   </g>
 
   <!-- Connector 1 -> 2 -->
@@ -115,7 +114,7 @@
     <circle cx="24" cy="24" r="12" fill="#8B5CF6" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
     <text x="46" y="28" font-size="13" font-weight="600" fill="#4C1D95">Auth &amp; Rate Limit</text>
-    <text x="14" y="52" font-size="11" fill="#334155">• Verify HTTP-only session JWT</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Verify HTTP-only session cookie</text>
     <text x="14" y="68" font-size="11" fill="#334155">• Check user request bucket</text>
     <text x="14" y="84" font-size="10" font-weight="600" fill="#7C3AED">Edge Middleware Inspection</text>
   </g>
@@ -130,8 +129,8 @@
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
     <text x="46" y="28" font-size="13" font-weight="600" fill="#064E3B">Price Recomputation</text>
     <text x="14" y="52" font-size="11" fill="#334155">• Discards client-provided prices</text>
-    <text x="14" y="68" font-size="11" fill="#334155">• Queries live DB price_cents</text>
-    <text x="14" y="84" font-size="10" font-weight="600" fill="#059669">Strict integer cents math</text>
+    <text x="14" y="68" font-size="11" fill="#334155">• Queries live DB pricePaise</text>
+    <text x="14" y="84" font-size="10" font-weight="600" fill="#059669">Strict integer paise math (INR)</text>
   </g>
 
   <!-- Connector 3 -> 4 -->
@@ -143,99 +142,99 @@
     <circle cx="24" cy="24" r="12" fill="#F59E0B" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
     <text x="46" y="28" font-size="13" font-weight="600" fill="#78350F">Idempotency Lock</text>
-    <text x="14" y="52" font-size="11" fill="#334155">• Hash Idempotency-Key</text>
-    <text x="14" y="68" font-size="11" fill="#334155">• If duplicate key: return cached</text>
-    <text x="14" y="84" font-size="10" font-weight="600" fill="#D97706">INSERT idempotency_keys</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• SHA-256 hash Idempotency-Key</text>
+    <text x="14" y="68" font-size="11" fill="#334155">• If duplicate key: return cached order</text>
+    <text x="14" y="84" font-size="10" font-weight="600" fill="#D97706">INSERT IdempotencyKey</text>
   </g>
 
   <!-- Connector 4 -> 5 (Down) -->
   <path d="M 982 225 L 982 280" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
 
-  <!-- Step 5: Atomic Inventory Lock -->
+  <!-- Step 5: Atomic Stock Lock -->
   <g transform="translate(865, 285)">
     <rect x="0" y="0" width="235" height="105" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5" filter="url(#shadow)" />
     <circle cx="24" cy="24" r="12" fill="#10B981" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
     <text x="46" y="28" font-size="13" font-weight="600" fill="#064E3B">Atomic Stock Lock</text>
-    <text x="14" y="50" font-size="11" fill="#334155">• UPDATE products SET stock = stock - q</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• UPDATE product SET stock = stock - q</text>
     <text x="14" y="66" font-size="11" fill="#334155">• WHERE stock &gt;= q (Row lock)</text>
-    <text x="14" y="82" font-size="11" fill="#334155">• 15-min reservation TTL</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• Prisma interactive $transaction</text>
     <text x="14" y="98" font-size="10" font-weight="600" fill="#059669">409 Conflict if out of stock</text>
   </g>
 
   <!-- Connector 5 -> 6 (Left) -->
   <path d="M 865 337 L 825 337" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
 
-  <!-- Step 6: Create Stripe Session -->
+  <!-- Step 6: UTR Format Check -->
   <g transform="translate(590, 285)">
     <rect x="0" y="0" width="230" height="105" rx="8" fill="#FFF1F2" stroke="#F43F5E" stroke-width="1.5" filter="url(#shadow)" />
     <circle cx="24" cy="24" r="12" fill="#F43F5E" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
-    <text x="46" y="28" font-size="13" font-weight="600" fill="#9F1239">Create Stripe Session</text>
-    <text x="14" y="50" font-size="11" fill="#334155">• Dispatches verified total cents</text>
-    <text x="14" y="66" font-size="11" fill="#334155">• Metadata: order_id, reservation_id</text>
-    <text x="14" y="82" font-size="11" fill="#334155">• Stripe returns checkout URL</text>
-    <text x="14" y="98" font-size="10" font-weight="600" fill="#E11D48">Stripe Hosted Checkout</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#9F1239">UTR Validation &amp; Fraud Guard</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• NPCI 12-digit format (UPI/IMPS)</text>
+    <text x="14" y="66" font-size="11" fill="#334155">• Sequential &amp; repeat pattern check</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• Logs forensics on rejected attempt</text>
+    <text x="14" y="98" font-size="10" font-weight="600" fill="#E11D48">assertUtrAcceptable()</text>
   </g>
 
   <!-- Connector 6 -> 7 (Left) -->
   <path d="M 590 337 L 550 337" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
 
-  <!-- Step 7: Order Record PENDING -->
+  <!-- Step 7: Claim UTR Anti-Replay -->
   <g transform="translate(315, 285)">
     <rect x="0" y="0" width="230" height="105" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5" filter="url(#shadow)" />
     <circle cx="24" cy="24" r="12" fill="#6366F1" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">7</text>
-    <text x="46" y="28" font-size="13" font-weight="600" fill="#1E1B4B">Create Pending Order</text>
-    <text x="14" y="50" font-size="11" fill="#334155">• Status: PENDING</text>
-    <text x="14" y="66" font-size="11" fill="#334155">• Stores Stripe session_id</text>
-    <text x="14" y="82" font-size="11" fill="#334155">• Commits DB transaction</text>
-    <text x="14" y="98" font-size="10" font-weight="600" fill="#4F46E5">Returns 201 + Checkout URL</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#1E1B4B">Claim UTR Anti-Replay</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• INSERT INTO utr_submissions</text>
+    <text x="14" y="66" font-size="11" fill="#334155">• utrNormalized UNIQUE constraint</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• Prisma P2002 trips on replay</text>
+    <text x="14" y="98" font-size="10" font-weight="600" fill="#4F46E5">Immediate transaction abort</text>
   </g>
 
   <!-- Connector 7 -> 8 (Left) -->
   <path d="M 315 337 L 275 337" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
 
-  <!-- Step 8: Customer Pays at Stripe -->
+  <!-- Step 8: Order Record PENDING -->
   <g transform="translate(40, 285)">
     <rect x="0" y="0" width="230" height="105" rx="8" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5" filter="url(#shadow)" />
     <circle cx="24" cy="24" r="12" fill="#3B82F6" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">8</text>
-    <text x="46" y="28" font-size="13" font-weight="600" fill="#1E3A8A">Customer Payment</text>
-    <text x="14" y="50" font-size="11" fill="#334155">• Browser redirects to Stripe</text>
-    <text x="14" y="66" font-size="11" fill="#334155">• Enters card / Apple Pay / UPI</text>
-    <text x="14" y="82" font-size="11" fill="#334155">• 3DS authentication if required</text>
-    <text x="14" y="98" font-size="10" font-weight="600" fill="#2563EB">Payment Authorized</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#1E3A8A">Create Pending Order</text>
+    <text x="14" y="50" font-size="11" fill="#334155">• Status: PENDING_PAYMENT_REVIEW</text>
+    <text x="14" y="66" font-size="11" fill="#334155">• PaymentStatus: AWAITING_VERIFY</text>
+    <text x="14" y="82" font-size="11" fill="#334155">• Commits DB transaction, clears cart</text>
+    <text x="14" y="98" font-size="10" font-weight="600" fill="#2563EB">ACID State Committed</text>
   </g>
 
   <!-- Connector 8 -> 9 (Down) -->
   <path d="M 155 390 L 155 450" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
 
-  <!-- Step 9: Webhook Delivery -->
+  <!-- Step 9: Customer Confirmation -->
   <g transform="translate(40, 455)">
     <rect x="0" y="0" width="310" height="115" rx="8" fill="#FFF1F2" stroke="#F43F5E" stroke-width="1.5" filter="url(#shadow)" />
     <circle cx="24" cy="24" r="12" fill="#F43F5E" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">9</text>
-    <text x="46" y="28" font-size="13" font-weight="600" fill="#9F1239">Stripe Dispatches Webhook</text>
-    <text x="14" y="52" font-size="11" fill="#334155">• Event: checkout.session.completed</text>
-    <text x="14" y="70" font-size="11" fill="#334155">• Signed with HMAC SHA-256 header (Stripe-Signature)</text>
-    <text x="14" y="88" font-size="11" fill="#334155">• Ingested via raw body buffer at /api/webhooks/stripe</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#9F1239">Customer Order Confirmation</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Returns 200 OK + orderNumber &amp; totalPaise</text>
+    <text x="14" y="70" font-size="11" fill="#334155">• Customer tracking view masks UTR (e.g. ********5678)</text>
+    <text x="14" y="88" font-size="11" fill="#334155">• Displays receipt preview &amp; verification notice</text>
     <text x="14" y="106" font-size="10" font-weight="600" fill="#E11D48">Zero spoofing trust boundary</text>
   </g>
 
   <!-- Connector 9 -> 10 (Right) -->
   <path d="M 350 512 L 410 512" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" fill="none" />
 
-  <!-- Step 10: Signature Check & Dedup -->
+  <!-- Step 10: Admin Bank Statement Audit -->
   <g transform="translate(415, 455)">
     <rect x="0" y="0" width="310" height="115" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5" filter="url(#shadow)" />
     <circle cx="24" cy="24" r="12" fill="#F59E0B" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">10</text>
-    <text x="46" y="28" font-size="13" font-weight="600" fill="#78350F">HMAC Signature &amp; Dedup</text>
-    <text x="14" y="52" font-size="11" fill="#334155">• stripe.webhooks.constructEvent(rawBody, sig)</text>
-    <text x="14" y="70" font-size="11" fill="#334155">• Check processed_events table by event.id</text>
-    <text x="14" y="88" font-size="11" fill="#334155">• If duplicate: return 200 OK immediately (no-op)</text>
-    <text x="14" y="106" font-size="10" font-weight="600" fill="#D97706">Guarantees exactly-once processing</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#78350F">Admin Bank Statement Audit</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Admin reviews order in Back-Office Console</text>
+    <text x="14" y="70" font-size="11" fill="#334155">• Compares UTR &amp; amount with bank statement credit</text>
+    <text x="14" y="88" font-size="11" fill="#334155">• Inspects uploaded receipt image at /api/uploads/...</text>
+    <text x="14" y="106" font-size="10" font-weight="600" fill="#D97706">Manual / ledger reconciliation</text>
   </g>
 
   <!-- Connector 10 -> 11 (Right) -->
@@ -246,11 +245,11 @@
     <rect x="0" y="0" width="310" height="115" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5" filter="url(#shadow)" />
     <circle cx="24" cy="24" r="12" fill="#10B981" />
     <text x="24" y="28" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">11</text>
-    <text x="46" y="28" font-size="13" font-weight="600" fill="#064E3B">Order Commit &amp; Audit Log</text>
-    <text x="14" y="52" font-size="11" fill="#334155">• Transition order status: PENDING -&gt; PAID</text>
-    <text x="14" y="70" font-size="11" fill="#334155">• Mark inventory_reservations as COMMITTED</text>
-    <text x="14" y="88" font-size="11" fill="#334155">• Insert audit_log record with event payload</text>
-    <text x="14" y="106" font-size="10" font-weight="600" fill="#059669">Dispatches confirmation email receipt</text>
+    <text x="46" y="28" font-size="13" font-weight="600" fill="#064E3B">Payment Verification Commit</text>
+    <text x="14" y="52" font-size="11" fill="#334155">• Order status transitions: CONFIRMED</text>
+    <text x="14" y="70" font-size="11" fill="#334155">• PaymentStatus updated: PAID</text>
+    <text x="14" y="88" font-size="11" fill="#334155">• Credits earned loyalty points to customer account</text>
+    <text x="14" y="106" font-size="10" font-weight="600" fill="#059669">Transitions order to fulfillment pipeline</text>
   </g>
 
   <!-- Failure & Edge Case Callouts (Bottom) -->
@@ -272,23 +271,23 @@
     <!-- Failure 2 -->
     <g transform="translate(365, 40)">
       <rect x="0" y="0" width="330" height="125" rx="6" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1" />
-      <text x="14" y="22" font-size="12" font-weight="600" fill="#92400E">Abandoned Checkout Sessions</text>
-      <text x="14" y="40" font-size="11" fill="#78350F">• User reserves inventory but closes Stripe tab.</text>
-      <text x="14" y="56" font-size="11" fill="#78350F">• Reservation expires after 15-minute TTL.</text>
-      <text x="14" y="72" font-size="11" fill="#78350F">• Cleanup task restores stock to products table.</text>
-      <text x="14" y="88" font-size="11" fill="#78350F">• Order transitioned to EXPIRED automatically.</text>
-      <text x="14" y="106" font-size="10" font-weight="600" fill="#D97706">Prevents dead inventory lockups</text>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#92400E">Expired Express Checkout</text>
+      <text x="14" y="40" font-size="11" fill="#78350F">• User triggers Buy-Now but abandons checkout.</text>
+      <text x="14" y="56" font-size="11" fill="#78350F">• ExpressCheckout row expires after TTL.</text>
+      <text x="14" y="72" font-size="11" fill="#78350F">• Subsequent place-order rejects expired express row.</text>
+      <text x="14" y="88" font-size="11" fill="#78350F">• Regular user cart remains completely untouched.</text>
+      <text x="14" y="106" font-size="10" font-weight="600" fill="#D97706">Prevents stale checkout execution</text>
     </g>
 
     <!-- Failure 3 -->
     <g transform="translate(715, 40)">
       <rect x="0" y="0" width="325" height="125" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1" />
-      <text x="14" y="22" font-size="12" font-weight="600" fill="#166534">Duplicate Webhook Retries</text>
-      <text x="14" y="40" font-size="11" fill="#14532D">• Stripe re-sends webhook if ACK latency &gt; 5s.</text>
-      <text x="14" y="56" font-size="11" fill="#14532D">• Handler checks processed_events by event.id.</text>
-      <text x="14" y="72" font-size="11" fill="#14532D">• Duplicate detected: immediately returns 200 OK.</text>
-      <text x="14" y="88" font-size="11" fill="#14532D">• State transitions and inventory remain untouched.</text>
-      <text x="14" y="106" font-size="10" font-weight="600" fill="#16A34A">Exact-once payment reconciliation</text>
+      <text x="14" y="22" font-size="12" font-weight="600" fill="#166534">Replay / Duplicate UTR Attempt</text>
+      <text x="14" y="40" font-size="11" fill="#14532D">• Attacker or buggy client submits an already-used UTR.</text>
+      <text x="14" y="56" font-size="11" fill="#14532D">• UNIQUE constraint on UtrSubmission trips P2002.</text>
+      <text x="14" y="72" font-size="11" fill="#14532D">• Transaction aborts: zero stock deducted, no order.</text>
+      <text x="14" y="88" font-size="11" fill="#14532D">• Rejection logged with IP &amp; user agent forensics.</text>
+      <text x="14" y="106" font-size="10" font-weight="600" fill="#16A34A">Exact-once payment submission</text>
     </g>
   </g>
 

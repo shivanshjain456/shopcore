@@ -9,7 +9,7 @@ This directory houses the interactive, editable diagrams.net (draw.io) architect
 | Diagram | Source File | Description | Interactive Lightbox |
 | :--- | :--- | :--- | :--- |
 | **System Architecture & Trust Boundaries** | [`architecture.drawio.svg`](architecture.drawio.svg) | C4 Container & Component model showing client surfaces, Next.js application server boundary, zero-trust pricing, inventory lock, and Prisma SQLite persistence. | [Open in Lightbox](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=architecture.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Farchitecture.drawio.svg) |
-| **Transactional Checkout Flow** | [`core-flows.drawio.svg`](core-flows.drawio.svg) | 11-step end-to-end checkout sequence covering cart submission, server price recomputation, idempotency locking, atomic stock decrement, and Stripe webhook reconciliation. | [Open in Lightbox](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=core-flows.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Fcore-flows.drawio.svg) |
+| **Transactional Checkout Flow** | [`core-flows.drawio.svg`](core-flows.drawio.svg) | 11-step end-to-end checkout sequence covering cart submission, server price recomputation, idempotency locking, atomic stock decrement, and UPI UTR reconciliation. | [Open in Lightbox](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=core-flows.drawio.svg#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fshivanshjain456%2Fshopcore%2Fmain%2Fdocs%2Farchitecture%2Fcore-flows.drawio.svg) |
 
 ---
 
@@ -48,7 +48,7 @@ These diagrams use the editable SVG format (`.drawio.svg`), which embeds complet
 ## Synchronization Rules & Guidelines
 
 When adding features or refactoring ShopCore, ensure the diagrams remain strictly synchronized with code:
-1. **Zero-Trust Pricing**: Never update the diagram to show client-side prices flowing to the database. All checkout totals must pass through the server-side recomputation engine in integer cents.
+1. **Zero-Trust Pricing**: Never update the diagram to show client-side prices flowing to the database. All checkout totals must pass through the server-side recomputation engine in integer paise.
 2. **Atomic Inventory Locks**: Any changes to stock allocation mechanisms (e.g. distributed Redis locks or PostgreSQL `FOR UPDATE`) must be reflected in both the Component View and the Failure Modes callout box.
-3. **Webhook Idempotency**: Stripe webhook flows must preserve the `processed_events` deduplication step to guarantee exactly-once processing.
+3. **Transaction & UTR Deduplication**: Payment submission flows must preserve the unique UTR constraint (`UtrSubmission.utrNormalized`) and atomic order placement to guarantee strictly once processing.
 4. **Security Notice**: Never embed real API keys, live webhook endpoints, or private customer records in diagram metadata.
