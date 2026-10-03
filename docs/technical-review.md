@@ -31,15 +31,15 @@ Rather than presenting as a generic CRUD storefront or tutorial project, ShopCor
 
 To evaluate the engineering quality in 5 minutes, inspect these core files:
 
-1. **Transaction Safety**: [`src/lib/checkout/placeOrder.ts`](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/src/lib/checkout/placeOrder.ts)  
+1. **Transaction Safety**: [`src/lib/checkout/placeOrder.ts`](../src/lib/checkout/placeOrder.ts)  
    *Inspect the atomic transaction boundary, UTR validation, integer total calculations, and inventory decrement logic.*
-2. **Idempotency Engine**: [`src/lib/checkout/idempotency.ts`](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/src/lib/checkout/idempotency.ts)  
+2. **Idempotency Engine**: [`src/lib/checkout/idempotency.ts`](../src/lib/checkout/idempotency.ts)  
    *Inspect the payload fingerprinting, state transitions, and duplicate request caching.*
-3. **Session & Token Rotation**: [`src/lib/auth/refresh.ts`](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/src/lib/auth/refresh.ts)  
+3. **Session & Token Rotation**: [`src/lib/auth/refresh.ts`](../src/lib/auth/refresh.ts)  
    *Inspect the refresh token family rotation and compromise detection algorithm.*
-4. **Data Model**: [`prisma/schema.prisma`](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/prisma/schema.prisma)  
+4. **Data Model**: [`prisma/schema.prisma`](../prisma/schema.prisma)  
    *Inspect the 52 relational models, compound indexes, and audit structures.*
-5. **Master Test Runner**: [`scripts/run-all-tests.ts`](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/scripts/run-all-tests.ts)  
+5. **Master Test Runner**: [`scripts/run-all-tests.ts`](../scripts/run-all-tests.ts)  
    *Inspect the self-contained test execution validating domain rules with zero mock servers.*
 
 ---
@@ -47,8 +47,8 @@ To evaluate the engineering quality in 5 minutes, inspect these core files:
 ## 4. Key Questions for Technical Interviews
 
 - **"Why SQLite instead of PostgreSQL?"**  
-  *Discussed in [docs/design-decisions.md](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/docs/design-decisions.md). Evaluated based on targeted scale (<500 users/month, 100 concurrent), zero hosting cost, single-file atomic backups via `VACUUM INTO`, and microsecond in-process read latency.*
+  *Discussed in [docs/design-decisions.md](./design-decisions.md). Evaluated based on targeted scale (<500 users/month, 100 concurrent), zero hosting cost, single-file atomic backups via `VACUUM INTO`, and microsecond in-process read latency.*
 - **"How does the system prevent overselling under high concurrency?"**  
-  *Discussed in [docs/architecture.md](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/docs/architecture.md). Evaluated through atomic database transactions and serialized writes in SQLite, verified by the `test:stock` suite.*
+  *Discussed in [docs/architecture.md](./architecture.md). Evaluated through atomic database transactions and serialized writes in SQLite, verified by the `test:stock` suite.*
 - **"How are client-side price tampering attacks mitigated?"**  
-  *Discussed in [docs/security.md](file:///c:/Projects/workspace-019e9eb6-581a-736b-93da-8868183da1f0/shopcore/docs/security.md). Handled via strict Zod schema parsing and server-side catalog recomputation, verified by `test:price-integrity`.*
+  *Discussed in [docs/security.md](./security.md). Handled via strict Zod schema parsing and server-side catalog recomputation, verified by `test:price-integrity`.*
