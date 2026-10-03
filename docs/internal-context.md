@@ -1,9 +1,9 @@
-# ShopCore — Engineering Context
+# ShopCore — Internal Engineering Context
 
-> **Audience:** AI coding agents (and humans) working in this repository.
-> **Goal:** be able to understand, navigate, and extend the codebase **without asking clarifying questions**.
+> **Audience:** Core contributors, maintainers, and reviewers working in this repository.
+> **Goal:** Comprehensive technical reference explaining core systems, invariants, data schemas, and design constraints.
 >
-> When this file conflicts with `BUILD_LOG.md`, the BUILD_LOG wins — it is the chronological record of every design decision.
+> For chronological architectural decisions and phase milestones, refer to `docs/engineering-history.md`.
 
 ---
 

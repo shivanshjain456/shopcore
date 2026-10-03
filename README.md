@@ -331,6 +331,7 @@ For deeper technical reviews, explore the dedicated documentation suite:
 - [Operations and Deployment Runbook](docs/operations.md): Single-VPS production guide, systemd setup, and backup strategy.
 - [Engineering Boundaries and Limitations](docs/limitations.md): Scale limits, single-writer ceilings, and roadmap.
 - [Technical Interview Quick Review](docs/technical-review.md): 3-minute executive technical summary.
+- [Engineering Changelog & Milestones](docs/engineering-history.md): Historical record of phased development.
 
 ---
 

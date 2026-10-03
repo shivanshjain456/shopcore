@@ -1,6 +1,6 @@
-# ShopCore — Build Log
+# ShopCore — Engineering Changelog & Development History
 
-Track of phase-by-phase progress. Each phase ships real, runnable code.
+Chronological record of architectural phases, feature implementations, and test verification sweeps.
 
 ## 🔍  Item 20 — Product Gallery Interaction  ✅  IMPLEMENTED & VERIFIED
 

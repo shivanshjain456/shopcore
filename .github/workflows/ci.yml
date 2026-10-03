@@ -16,7 +16,7 @@ concurrency:
 jobs:
   validate:
     name: Lint, Test & Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     env:
@@ -27,6 +27,8 @@ jobs:
       SESSION_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       CSRF_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       SHOPCORE_ALLOW_TEST_EMAILS: "1"
+      BOOTSTRAP_ADMIN_EMAIL: admin@shopcore.internal
+      BOOTSTRAP_ADMIN_PASSWORD: ShopCoreAdmin#2026
 
     steps:
       - name: Checkout repository
@@ -37,15 +39,19 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Generate Prisma Client
         run: npx prisma generate
 
       - name: Apply Database Migrations
         run: npx prisma migrate deploy
+
+      - name: Seed Initial Database State
+        run: npm run db:seed
 
       - name: Run ESLint
         run: npm run lint

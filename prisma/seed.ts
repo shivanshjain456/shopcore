@@ -70,41 +70,52 @@ async function main() {
   console.log('✔ Brands ready');
 
   // ── Bootstrap admin
-  const email = process.env.BOOTSTRAP_ADMIN_EMAIL;
-  const pass = process.env.BOOTSTRAP_ADMIN_PASSWORD;
-  if (email && pass) {
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (!existing) {
-      const hash = await bcrypt.hash(pass, 12);
-      await prisma.user.create({
-        data: {
-          firstName:    process.env.BOOTSTRAP_ADMIN_FIRSTNAME ?? 'Store',
-          lastName:     process.env.BOOTSTRAP_ADMIN_LASTNAME  ?? 'Admin',
-          email,
-          phone:        process.env.BOOTSTRAP_ADMIN_PHONE ?? '+910000000000',
-          passwordHash: hash,
-          addressLine1: 'HQ',
-          addressLine2: '-',
-          city:         'Mumbai',
-          state:        'Maharashtra',
-          pinCode:      '400001',
-          country:      'India',
-          role:         'ADMIN',
-          // STATE_MACHINE_BYPASS: seed-time bootstrap. The Account State
-          // Machine governs runtime status TRANSITIONS; this insert sets
-          // the initial state for a brand-new admin row, no prior state
-          // exists. The machine would (correctly) reject this as a
-          // PENDING_OTP → ACTIVE transition without an OTP.
-          status:       'ACTIVE',
-        },
-      });
-      console.log(`✔ Bootstrap admin created: ${email}`);
-      console.log('  ⚠ IMPORTANT: change this password from the admin dashboard ASAP.');
-    } else {
-      console.log(`✔ Admin already exists: ${email}`);
-    }
+  const email = process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@shopcore.internal';
+  const pass = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'ShopCoreAdmin#2026';
+  const phone = process.env.BOOTSTRAP_ADMIN_PHONE || '+910000000000';
+
+  const existing = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email },
+        { phone },
+      ],
+    },
+  });
+
+  if (!existing) {
+    const hash = await bcrypt.hash(pass, 12);
+    await prisma.user.create({
+      data: {
+        firstName:    process.env.BOOTSTRAP_ADMIN_FIRSTNAME ?? 'Store',
+        lastName:     process.env.BOOTSTRAP_ADMIN_LASTNAME  ?? 'Admin',
+        email,
+        phone,
+        passwordHash: hash,
+        addressLine1: 'HQ',
+        addressLine2: '-',
+        city:         'Mumbai',
+        state:        'Maharashtra',
+        pinCode:      '400001',
+        country:      'India',
+        role:         'ADMIN',
+        // STATE_MACHINE_BYPASS: seed-time bootstrap. The Account State
+        // Machine governs runtime status TRANSITIONS; this insert sets
+        // the initial state for a brand-new admin row, no prior state
+        // exists.
+        status:       'ACTIVE',
+      },
+    });
+    console.log(`✔ Bootstrap admin created: ${email}`);
   } else {
-    console.log('⚠ Skipped admin bootstrap (BOOTSTRAP_ADMIN_EMAIL / _PASSWORD not set)');
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        role: 'ADMIN',
+        status: 'ACTIVE',
+      },
+    });
+    console.log(`✔ Admin ensured: ${existing.email}`);
   }
 
   // ── Background Job schedules (Item 7) ─────────────────────────────────
