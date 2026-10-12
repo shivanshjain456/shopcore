@@ -8,6 +8,13 @@
 [![Prisma](https://img.shields.io/badge/Prisma-5.22.0%20SQLite%20WAL-indigo)](https://www.prisma.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/brand/svg/shopcore-primary-dark.svg">
+    <img src="public/brand/svg/shopcore-primary.svg" alt="ShopCore — production full-stack commerce and financial transaction platform" width="420">
+  </picture>
+</p>
+
 ---
 
 ## Summary
