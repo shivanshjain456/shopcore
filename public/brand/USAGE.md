@@ -1,13 +1,13 @@
-# ShopCore — identity usage
+# ShopCore - identity usage
 
 > Production commerce engine with integer-money accounting, atomic inventory reservation and idempotent payments.
 > Audience: Full-stack developers, B2C/B2B commerce operators
 
 ## Concept
-A carrier bag with a die-cut handle and a circular core aperture — the transactional core at the centre of the store.
+A carrier bag with a die-cut handle and a circular core aperture - the transactional core at the centre of the store.
 
 The compact mark carries the identity alone; the primary lockup pairs it with the
-'ShopCore' wordmark (Space Grotesk SemiBold, converted to outlines — no font
+'ShopCore' wordmark (Space Grotesk SemiBold, converted to outlines - no font
 required to render the production files).
 
 ## Colour
@@ -18,7 +18,7 @@ required to render the production files).
 
 Single-colour reproduction: use `*-mono.svg` (all geometry set to
 `currentColor`); set any colour ≥ 4.5:1 contrast against the background.
-Negative space (needle, slashes, core, route) must always show the background —
+Negative space (needle, slashes, core, route) must always show the background -
 never fill it with a second colour.
 
 ## Typography
